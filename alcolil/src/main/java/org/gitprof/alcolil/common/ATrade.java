@@ -10,11 +10,11 @@ public class ATrade implements CSVable{
 	APrice price;
 	AOrder executingOrder;
 	
-	public CSVObject convertToCSV() {
+	public String[] convertToCSV() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	public void initFromCSV(CSVObject csvObject) {
+	public void initFromCSV(String[] csvs) {
 		// TODO Auto-generated method stub
 		
 	}

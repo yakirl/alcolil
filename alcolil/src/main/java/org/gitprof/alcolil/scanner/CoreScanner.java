@@ -22,6 +22,15 @@ public class CoreScanner {
 		REALTIME, BACKTEST
 	}
 	
+	/*
+	 * Running the QuotePipe.
+	 * the QuotePipe responsible to fetch the quotes either from a marketData fetcher (Yahoo/IB as configured)
+	 * or from DataBase, in case of backtest, or in case that we want real time scanning but starting the graph from a point in the past.
+	 * if needed - the pipe will sync between old and new data
+	 * the purpose is to give the scanner clean, neat interface for getting the next quote.
+	 * The QuotePipe runs on its own thread.
+	 * 
+	 */
 	private void setQuotePipe(ScannerMode mode, ATime from, ATime to) {
 		if (ScannerMode.REALTIME == mode) {
 			quotePipe = new RealTimePipe(stocks, from);

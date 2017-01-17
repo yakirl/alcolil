@@ -3,7 +3,7 @@ package org.gitprof.alcolil.database;
 
 public interface CSVable {
 
-	public CSVObject convertToCSV();
+	public String[] convertToCSV();
 	
-	public void initFromCSV(CSVObject csvObject);
+	public void initFromCSV(String[] csvs);
 }
