@@ -2,7 +2,7 @@ package org.gitprof.alcolil.common;
 
 public class Enums {
 	public enum OrderType {
-		BUY_STP, BUY_LMT, SELL_STP, SELL_LMT
+		BUY_MKT, BUY_STP, BUY_LMT, SELL_MKT, SELL_STP, SELL_LMT
 	}
 	
 	public enum ExitType {
@@ -10,7 +10,9 @@ public class Enums {
 	}
 
 	public boolean isLong(OrderType orderType) {
-		return (OrderType.BUY_STP == orderType) || (OrderType.BUY_LMT == orderType);
+		return (OrderType.BUY_STP == orderType)  || 
+				(OrderType.BUY_LMT == orderType) ||
+				(OrderType.BUY_MKT == orderType);
 	}
 	
 	public boolean isShort(OrderType orderType) {

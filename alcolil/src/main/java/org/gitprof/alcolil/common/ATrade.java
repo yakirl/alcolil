@@ -8,6 +8,7 @@ public class ATrade implements CSVable{
 	private String symbol;
 	int num_shares;
 	APrice price;
+	AOrder executingOrder;
 	
 	public CSVObject convertToCSV() {
 		// TODO Auto-generated method stub

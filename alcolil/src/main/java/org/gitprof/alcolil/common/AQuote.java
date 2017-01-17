@@ -9,16 +9,35 @@ public class AQuote implements CSVable {
 	private APrice high;
 	private APrice low;
 	private APrice close;
-	private int volume;
+	private Integer volume;
 	private AInterval interval;
 	private ATime time;
 	
 	public CSVObject convertToCSV() {
-		// TODO Auto-generated method stub
-		return null;
+		String[] fields = new String[8];
+		fields[0] = symbol;
+		fields[1] = open.toString();
+		fields[2] = high.toString();
+		fields[3] = low.toString();
+		fields[4] = close.toString();
+		fields[5] = volume.toString();
+		fields[6] = interval.toString();
+		fields[7] = time.toString();
+		
+		CSVObject csvObject = new CSVObject(fields);
+		
+		return csvObject;
 	}
+	
 	public void initFromCSV(CSVObject csvObject) {
-		// TODO Auto-generated method stub
+		symbol = csvObject.getField(0);
+		open = new APrice(csvObject.getField(1));
+		high = new APrice(csvObject.getField(2));
+		low = new APrice(csvObject.getField(3));
+		close = new APrice(csvObject.getField(4));
+		volume = new Integer(csvObject.getField(5));
+		interval = new AInterval(csvObject.getField(1));
+		time = new ATime(csvObject.getField(1));
 		
 	}
 }

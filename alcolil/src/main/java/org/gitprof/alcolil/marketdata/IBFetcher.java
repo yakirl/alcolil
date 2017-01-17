@@ -1,6 +1,7 @@
 package org.gitprof.alcolil.marketdata;
 
-import org.gitprof.alcolil.common.ATimeSeries;
+import org.gitprof.alcolil.common.*;
+
 
 public class IBFetcher extends BaseFetcher {
 
@@ -17,7 +18,7 @@ public class IBFetcher extends BaseFetcher {
 	}
 
 	@Override
-	public ATimeSeries getHistory() {
+	public ATimeSeries getHistory(String symbol, AInterval interval, ATime from, ATime to) {
 		// TODO Auto-generated method stub
 		ATimeSeries aTimeSeries = new ATimeSeries();
 		return aTimeSeries;

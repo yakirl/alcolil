@@ -10,7 +10,7 @@ import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 
-import org.gitprof.alcolil.common.ATimeSeries;
+import org.gitprof.alcolil.common.*;
 
 public class YahooFetcher extends BaseFetcher {
 
@@ -59,7 +59,7 @@ public class YahooFetcher extends BaseFetcher {
 	}
 	
 	@Override
-	public ATimeSeries getHistory() {
+	public ATimeSeries getHistory(String symbol, AInterval aInterval, ATime from, ATime to) {
 		
 		Stock stock;
 		boolean toPrint = false;

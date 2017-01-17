@@ -7,7 +7,10 @@ import java.lang.Thread;
 
 import org.gitprof.alcolil.scanner.BackTester;
 import org.gitprof.alcolil.ui.Interface;
+import org.gitprof.alcolil.stats.StatsCalculator;
+import org.gitprof.alcolil.scanner.ParamOptimizer;
 import org.gitprof.alcolil.common.ATime;
+
 
 public class Core 
 {
@@ -27,7 +30,8 @@ public class Core
     }
     
     private void calcStats() {
-    	
+    	StatsCalculator statsCalculator = new StatsCalculator();
+    	statsCalculator.calc();
     }
     
     private void backtest(ATime from, ATime to) {
@@ -35,7 +39,12 @@ public class Core
     	backTester.backTest(from, to);
     }
     
+    private void optimizeParameters() {
+    	ParamOptimizer paramOptimizer = new ParamOptimizer();
+    	paramOptimizer.optimize();
+    }
+    
     private void realTimeScan() {
-    	
+    	// run as thread
     }
 }

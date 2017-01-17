@@ -17,13 +17,13 @@ public class DBManager {
 	Path StockDB;
 	Path AlarmDB;
 	
-	private DBManager dbManager = null;
+	private static DBManager dbManager = null;
 	
 	private DBManager() {
 		
 	}
 	
-	public DBManager getInstance() {
+	public static DBManager getInstance() {
 		if (null == dbManager) 
 			dbManager = new DBManager();
 		return dbManager;	
