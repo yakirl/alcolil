@@ -13,6 +13,10 @@ public class AQuote implements CSVable {
 	private AInterval interval;
 	private ATime time;
 	
+	public String getSymbol() {
+		return symbol;
+	}
+	
 	public CSVObject convertToCSV() {
 		String[] fields = new String[8];
 		fields[0] = symbol;

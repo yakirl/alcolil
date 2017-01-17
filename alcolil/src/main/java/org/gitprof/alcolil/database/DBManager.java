@@ -1,17 +1,23 @@
 package org.gitprof.alcolil.database;
 
+import java.util.Map;
 import java.nio.file.Path;
-
+import java.nio.file.Paths;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FileReader;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
 
+import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.global.Conf;
 
 public class DBManager {
 
+	Map<DBSection, Lock> sectionLocks;
 	Path QuoteDB;
 	Path TradeDB;
 	Path StockDB;
@@ -19,8 +25,9 @@ public class DBManager {
 	
 	private static DBManager dbManager = null;
 	
+	
 	private DBManager() {
-		
+		initSectionLocks();
 	}
 	
 	public static DBManager getInstance() {
@@ -29,21 +36,54 @@ public class DBManager {
 		return dbManager;	
 	}
 	
-	private enum Op {
+	private void initSectionLocks() {
+		sectionLocks.put(DBSection.QUOTE_DB, new ReentrantLock());
+		sectionLocks.put(DBSection.TRADE_DB, new ReentrantLock());
+		sectionLocks.put(DBSection.STOCK_DB, new ReentrantLock());
+		sectionLocks.put(DBSection.STATS_DB, new ReentrantLock());
+	}
+	
+	public enum DBSection {
+		QUOTE_DB, TRADE_DB, STOCK_DB, STATS_DB
+	}
+	
+	private enum DirOp {
 		CREATE, DELETE
 	}
 	
+	// create if not already exists
 	public void createDir(Path path) {
-		createDeleteDir(path, Op.CREATE);
+		//createDeleteDir(path, DirOp.CREATE);
+		File folder = new File(path.toString());
+		folder.mkdirs();
+		
 	}
 	
 	public void deleteDir(Path path) {
-		createDeleteDir(path, Op.DELETE);
+		//createDeleteDir(path, DirOp.DELETE);
+		File folder = new File(path.toString());
+		folder.delete();
 	}
 	
-	private synchronized void createDeleteDir(Path path, Op op) {
-		File folder = new File(path.toString());
-		folder.mkdirs();
+	private synchronized void createDeleteDir(Path path, DirOp op) {
+		// nothing
+	}
+	
+	private enum FileOp {
+		MODIFY, READ
+	}
+	
+	public Path getSectionPath() {
+		return null;
+	}
+	
+	
+	public void writeToQuoteDB(ATimeSeries timeSeries) {
+		String symbol = timeSeries.getSymbol();
+		Path dirPath = Paths.get(Conf.quoteDB + "\\" + symbol);
+		createDir(dirPath);
+		
+		
 	}
 	
 	public void createFile(Path path) {
@@ -59,6 +99,9 @@ public class DBManager {
 	}
 	
 	
+	public Path getFullPath() {
+		return null;
+	}
 	
 	
 	

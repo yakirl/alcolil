@@ -18,7 +18,7 @@ public class IBFetcher extends BaseFetcher {
 	}
 
 	@Override
-	public ATimeSeries getHistory(String symbol, AInterval interval, ATime from, ATime to) {
+	public ATimeSeries getHistory(String symbol, Enums.GraphInterval interval, ATime from, ATime to) {
 		// TODO Auto-generated method stub
 		ATimeSeries aTimeSeries = new ATimeSeries();
 		return aTimeSeries;

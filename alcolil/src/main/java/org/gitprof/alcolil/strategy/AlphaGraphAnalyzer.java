@@ -9,9 +9,23 @@ import java.util.PriorityQueue;
 
 import yahoofinance.histquotes.HistoricalQuote;
 
+import org.gitprof.alcolil.common.*;
+
 public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 
 	private List<HistoricalQuote> quotes;
+	
+	public void updateNextQuote(AQuote quote) {
+		//TODO
+	}
+	
+	public AlphaGraphAnalyzer() {
+		
+	}
+	
+	public AlphaGraphAnalyzer(List<HistoricalQuote> quotes) {
+		this.quotes = quotes;
+	}
 	
 	public class RankedQuote implements Comparable<RankedQuote> {
 		public HistoricalQuote quote;
@@ -32,10 +46,6 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 			}
 			return ret;
 		}
-	}
-	
-	public AlphaGraphAnalyzer(List<HistoricalQuote> quotes) {
-		this.quotes = quotes;
 	}
 	
 	private double calcSupportRank(ListIterator<HistoricalQuote> bwdItr, HistoricalQuote currQuote) {

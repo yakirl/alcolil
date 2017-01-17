@@ -11,6 +11,7 @@ import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 
 import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.common.Enums.GraphInterval;
 
 public class YahooFetcher extends BaseFetcher {
 
@@ -40,6 +41,10 @@ public class YahooFetcher extends BaseFetcher {
 		
 	}
 	
+	public class RealTimeQuoteHandler {
+		
+	}
+	
 	public void getQuote() {
 		
 		Stock stock;
@@ -58,14 +63,26 @@ public class YahooFetcher extends BaseFetcher {
 
 	}
 	
+	
 	@Override
-	public ATimeSeries getHistory(String symbol, AInterval aInterval, ATime from, ATime to) {
-		
+	public ATimeSeries getHistory(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
+		if (graphInterval == GraphInterval.FIVE_MIN ||
+				graphInterval == GraphInterval.ONE_MIN)
+			return getHistoricalIntraDay(symbol, graphInterval, from, to);
+		else
+			return getHistoricalAboveDaily(symbol, graphInterval, from, to);
+	}
+	
+	private ATimeSeries getHistoricalIntraDay(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
+		return null;
+	}
+	
+	private ATimeSeries getHistoricalAboveDaily(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
 		Stock stock;
 		boolean toPrint = false;
 		List<HistoricalQuote> histQuotes = null;
 		try {
-			stock = YahooFinance.get("TSLA", true);
+			stock = YahooFinance.get(symbol, true);
 			Interval interval = Interval.DAILY;
 			histQuotes = stock.getHistory(interval);
 			if (toPrint) {
