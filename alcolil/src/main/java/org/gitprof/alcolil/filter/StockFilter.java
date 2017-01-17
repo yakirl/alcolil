@@ -1,4 +1,4 @@
-package org.gitprof.filter;
+package org.gitprof.alcolil.filter;
 
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
