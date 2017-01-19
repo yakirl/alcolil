@@ -6,16 +6,19 @@ import org.apache.log4j.Logger;
 import java.lang.Thread;
 
 import org.gitprof.alcolil.scanner.BackTester;
-import org.gitprof.alcolil.ui.Interface;
+import org.gitprof.alcolil.ui.UserInterface;
 import org.gitprof.alcolil.stats.StatsCalculator;
 import org.gitprof.alcolil.scanner.ParamOptimizer;
 import org.gitprof.alcolil.common.ATime;
+import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
+import org.gitprof.alcolil.marketdata.BaseFetcher;
 
 
 public class Core 
 {
 	
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
+	
 	
     public void start() {
     
@@ -26,7 +29,7 @@ public class Core
     }
     
     private void runInterface() {
-    	Interface.startInterface();
+    	UserInterface.startInterface();
     }
     
     private void calcStats() {
@@ -46,5 +49,10 @@ public class Core
     
     private void realTimeScan() {
     	// run as thread
+    }
+    
+    private void updateHistoricalDataDB(String stockFilename, BaseFetcher fetcher) {
+    	HistoricalDataUpdater updater = new HistoricalDataUpdater(stockFilename, fetcher);
+    	
     }
 }

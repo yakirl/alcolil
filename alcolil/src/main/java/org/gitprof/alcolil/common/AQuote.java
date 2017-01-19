@@ -1,36 +1,41 @@
 package org.gitprof.alcolil.common;
 
+import java.math.BigDecimal;
 //import org.gitprof.alcolil.database.CSVObject;
 import org.gitprof.alcolil.database.CSVable;
 
 public class AQuote implements CSVable {
-	private String symbol;
-	private APrice open;
-	private APrice high;
-	private APrice low;
-	private APrice close;
-	private Integer volume;
-	private AInterval interval;
-	private ATime time;
-	private boolean live = false;
+	private String asymbol;
+	private BigDecimal aopen;
+	private BigDecimal ahigh;
+	private BigDecimal alow;
+	private BigDecimal aclose;
+	private long avolume;
+	private Enums.GraphInterval ainterval;
+	private ATime atime;
+	private boolean alive = false;
 	
 	public AQuote(String symbol,
-			APrice open,
-			APrice high,
-			APrice low,
-			APrice close,
+			BigDecimal open,
+			BigDecimal high,
+			BigDecimal low,
+			BigDecimal close,
 			Integer volume,
-			AInterval interval,
+			Enums.GraphInterval interval,
 			ATime time) {
-		this.symbol = symbol;
-		this.open = open;
-		this.high = high;
-		this.low = low;
-		this.close = close;
-		this.volume = volume;
-		this.interval = interval;
-		this.time = time;
-		this.live = true;
+		this.asymbol = symbol;
+		this.aopen = open;
+		this.ahigh = high;
+		this.alow = low;
+		this.aclose = close;
+		this.avolume = volume;
+		this.ainterval = interval;
+		this.atime = time;
+		this.alive = true;
+	}
+	
+	public AQuote(AQuote quote) {
+		//TODO
 	}
 	
 	// 'dead quote' builder
@@ -38,24 +43,80 @@ public class AQuote implements CSVable {
 		
 	}
 	
-	public String getSymbol() {
-		return symbol;
+	public String symbol() {
+		return asymbol;
 	}
 	
-	public ATime getTime() {
-		return time;
+	public BigDecimal open() {
+		return aopen;
+	}
+	
+	public BigDecimal high() {
+		return ahigh;
+	}
+	
+	public BigDecimal low() {
+		return alow;
+	}
+	
+	public BigDecimal close() {
+		return aclose;
+	}
+	
+	public long volume() {
+		return avolume;
+	}
+		
+	public Enums.GraphInterval interval() {
+		return ainterval;
+	}
+	
+	public ATime time() {
+		return atime;
+	}
+	
+	public void open(BigDecimal open) {
+		this.aopen = open;
+	}
+	
+	public void high(BigDecimal high) {
+		this.ahigh = high;
+	}
+	
+	public void low(BigDecimal low) {
+		this.alow = low;
+	}
+	
+	public void close(BigDecimal close) {
+		this.aclose = close;
+	}
+	
+	public void volume(long volume) {
+		this.avolume = volume;
+	}
+	
+	public void interval(Enums.GraphInterval interval) {
+		this.ainterval = interval;
+	}
+	
+	public void time(ATime time) {
+		this.atime = time;
+	}
+	
+	public boolean isDead() {
+		return !alive;
 	}
 	
 	public String[] convertToCSV() {
 		String[] fields = new String[8];
-		fields[0] = symbol;
-		fields[1] = open.toString();
-		fields[2] = high.toString();
-		fields[3] = low.toString();
-		fields[4] = close.toString();
-		fields[5] = volume.toString();
-		fields[6] = interval.toString();
-		fields[7] = time.toString();
+		fields[0] = asymbol;
+		fields[1] = aopen.toString();
+		fields[2] = ahigh.toString();
+		fields[3] = alow.toString();
+		fields[4] = aclose.toString();
+		fields[5] = String.valueOf(avolume);
+		fields[6] = ainterval.toString();
+		fields[7] = atime.toString();
 		
 		//CSVObject csvObject = new CSVObject(fields);
 		
@@ -63,14 +124,14 @@ public class AQuote implements CSVable {
 	}
 	
 	public void initFromCSV(String[] csvs) {
-		symbol = csvs[0];
-		open = new APrice(csvs[1]);
-		high = new APrice(csvs[2]);
-		low = new APrice(csvs[3]);
-		close = new APrice(csvs[4]);
-		volume = new Integer(csvs[5]);
-		interval = new AInterval(csvs[6]);
-		time = new ATime(csvs[7]);
+		asymbol = csvs[0];
+		aopen = new BigDecimal(csvs[1]);
+		ahigh = new BigDecimal(csvs[2]);
+		alow = new BigDecimal(csvs[3]);
+		aclose = new BigDecimal(csvs[4]);
+		avolume = new Integer(csvs[5]);
+		ainterval = Enums.GraphInterval.valueOf(csvs[6]);
+		atime = new ATime(csvs[7]);
 		
 	}
 }

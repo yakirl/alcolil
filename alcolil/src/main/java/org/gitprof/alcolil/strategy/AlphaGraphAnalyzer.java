@@ -13,25 +13,21 @@ import org.gitprof.alcolil.common.*;
 
 public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 
-	private List<HistoricalQuote> quotes;
+	private ABarSeries barSeries;
 	
 	public void updateNextQuote(AQuote quote) {
 		//TODO
 	}
 	
-	public AlphaGraphAnalyzer() {
-		
-	}
-	
-	public AlphaGraphAnalyzer(List<HistoricalQuote> quotes) {
-		this.quotes = quotes;
+	public AlphaGraphAnalyzer(ABarSeries barSeries) {
+		this.barSeries = barSeries;
 	}
 	
 	public class RankedQuote implements Comparable<RankedQuote> {
-		public HistoricalQuote quote;
+		public AQuote quote;
 		public double rank;
 		
-		public RankedQuote(HistoricalQuote quote, double rank) {
+		public RankedQuote(AQuote quote, double rank) {
 			this.quote = quote;
 			this.rank = rank;
 		}
@@ -48,23 +44,23 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		}
 	}
 	
-	private double calcSupportRank(ListIterator<HistoricalQuote> bwdItr, HistoricalQuote currQuote) {
+	private double calcSupportRank(ListIterator<AQuote> bwdItr, AQuote currQuote) {
 		int D_MAX = 8;
 		double rank = 0;
 		//boolean isSupport = false;
 		if ((!bwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 			return 0;
 		}
-		ListIterator<HistoricalQuote> fwdItr = quotes.listIterator(bwdItr.nextIndex()-1);
+		ListIterator<AQuote> fwdItr = barSeries.listIterator(bwdItr.nextIndex()-1);
 		bwdItr.next();
 		//MathContext mc = new MathContext(2);
 		int d; for (d = 0; d < D_MAX; d++) {
 			if ((!fwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 					break;
 			}
-			double curr = currQuote.getLow().doubleValue();
-			double prev = bwdItr.previous().getLow().doubleValue();
-			double next = fwdItr.next().getLow().doubleValue();
+			double curr = currQuote.low().getDouble();
+			double prev = bwdItr.previous().low().getDouble();
+			double next = fwdItr.next().low().getDouble();
 			double leftDis  = prev - curr;
 			double rightDis = next - curr;
 			if (leftDis < 0 || rightDis < 0) {
@@ -78,16 +74,16 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 	
 	public void findSupports() {
 		PriorityQueue<RankedQuote> supports = new PriorityQueue<RankedQuote>();
-		int ix; for (ix = 0; ix < quotes.size(); ix++) {
-			double supportRank = calcSupportRank(quotes.listIterator(ix), quotes.get(ix));
-			RankedQuote rankedQuote = new RankedQuote(quotes.get(ix), supportRank);
+		int ix; for (ix = 0; ix < barSeries.size(); ix++) {
+			double supportRank = calcSupportRank(barSeries.listIterator(ix), barSeries.getQuote(ix));
+			RankedQuote rankedQuote = new RankedQuote(barSeries.getQuote(ix), supportRank);
 			supports.add(rankedQuote);
 		}
 		System.out.println("*******");
 		for (ix = 0; ix < 5; ix++) {
-			HistoricalQuote quote = supports.poll().quote;
-			System.out.println(quote.getLow());
-			System.out.println(quote.getDate().getTime());
+			AQuote quote = supports.poll().quote;
+			System.out.println(quote.low());
+			System.out.println(quote.time());
 			System.out.println(supports.poll().rank);
 		}
 		System.out.println("*******");

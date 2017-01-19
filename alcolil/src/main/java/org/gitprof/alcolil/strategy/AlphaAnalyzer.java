@@ -1,16 +1,19 @@
 package org.gitprof.alcolil.strategy;
 
-import org.gitprof.alcolil.common.AQuote;
-import org.gitprof.alcolil.common.Enums.GraphInterval;
+import org.gitprof.alcolil.common.*;
 
 public class AlphaAnalyzer extends BaseAnalyzer {
 
+	public AlphaAnalyzer(ATimeSeries timeSeries) {
+		initialize(timeSeries);
+	}
+	
 	@Override
-	public void initialize() {
-		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer();
+	public void initialize(ATimeSeries timeSeries) {
+		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(Enums.GraphInterval.ONE_MIN));
 		super.setGraphAnalyzer(oneMinAnalyzer);
-		AlphaGraphAnalyzer fiveMinAnalyzer = new AlphaGraphAnalyzer();
-		super.setGraphAnalyzer(fiveMinAnalyzer);
+		//AlphaGraphAnalyzer fiveMinAnalyzer = new AlphaGraphAnalyzer();
+		//super.setGraphAnalyzer(fiveMinAnalyzer);
 	}
 
 	@Override
@@ -21,7 +24,7 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 	}
 	
 	public void updateOneMinGraph(AQuote quote) {
-		BaseGraphAnalyzer graphAnalyzer = graphs.get(GraphInterval.ONE_MIN);
+		BaseGraphAnalyzer graphAnalyzer = graphs.get(Enums.GraphInterval.ONE_MIN);
 	}
 	
 	public void updateFiveMinGraph(AQuote quote) {

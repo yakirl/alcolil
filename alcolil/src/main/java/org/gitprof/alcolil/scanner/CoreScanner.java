@@ -6,7 +6,7 @@ import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.scanner.BaseQuotePipe;
 import org.gitprof.alcolil.strategy.BaseAnalyzer;
 
-public class CoreScanner {
+public class CoreScanner implements Runnable {
 
 	AStockCollection stocks;
 	Map<String, BaseAnalyzer> analyzers;
@@ -14,12 +14,18 @@ public class CoreScanner {
 	BaseQuotePipe quotePipe = null;
 	ATime stop = null;
 	
-	public CoreScanner() {
-		
+	public CoreScanner(AStockCollection stocks, ATime from, ATime to) {
+		this.stocks = stocks;
+		initializeAnalyzers();
 	}
 	
 	private enum ScannerMode {
 		REALTIME, BACKTEST
+	}
+	
+	// we use only alpha analyzer for now
+	private void initializeAnalyzers() {
+		
 	}
 	
 	/*
@@ -60,8 +66,22 @@ public class CoreScanner {
 		BaseAnalyzer analyzer;
 		while(true) {
 			quote = quotePipe.getNextQuote();
-			analyzer = analyzers.get(quote.getSymbol());
+			analyzer = analyzers.get(quote.symbol());
 			analyzer.updateNextQuote(quote);
+			if (stop.before(quote.time())) {
+				break;
+			}
 		}
+		close();
+	}
+
+	private void close() {
+		
+	}
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
 	}
 }

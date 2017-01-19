@@ -1,6 +1,15 @@
 package org.gitprof.alcolil.ui;
 
-public class GUI {
+import javax.swing.JPanel;
 
+
+public class GUI extends JPanel {
+
+	public GUI(GController controller) {
+		
+	}
 	
+	public void startGUI() {
+		
+	}
 }

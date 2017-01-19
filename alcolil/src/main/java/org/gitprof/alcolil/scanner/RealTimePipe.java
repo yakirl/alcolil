@@ -12,8 +12,14 @@ public class RealTimePipe extends BaseQuotePipe {
 	
 	@Override
 	public AQuote getNextQuote() {
+		AQuote nextQuote = quoteQueuePoll(3);
+		return nextQuote;
+	}
+
+	@Override
+	public void run() {
 		// TODO Auto-generated method stub
-		return null;
+		
 	}
 
 }

@@ -2,27 +2,36 @@ package org.gitprof.alcolil.ui;
 
 import javax.swing.SwingUtilities;
 
-public class Interface implements Runnable {
+public class UserInterface implements Runnable {
 
-	static Interface intf = null;
+	static UserInterface intf = null;
 	
-	private Interface() {
+	private UserInterface() {
 		
 	}
 	
+	private void initializeAndRun() {
+		GController gcontroller = new GController();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				(new GUI(gcontroller)).startGUI();
+			}
+		});
+		gcontroller.go();
+	}
 	
 	public void run() {
-		// TODO Auto-generated method stub
-		
+			
 	}
 	
-	private static Interface getInstance() {
+	private static UserInterface getInstance() {
 		if (null == intf)
-			intf = new Interface();
+			intf = new UserInterface();
 		return intf;
 	}
 	public static void startInterface() {
-		Interface intf = getInstance();
+		UserInterface intf = getInstance();
 		try {
 			SwingUtilities.invokeLater(intf);
 			//SwingUtilities.invokeAndWait(runnable);

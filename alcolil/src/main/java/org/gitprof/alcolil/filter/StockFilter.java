@@ -11,7 +11,11 @@ public class StockFilter {
 	long minAvgVol;
 	int lastXDaysForAvg;
 	int minMarketCap;
-	APrice minLastPrice;
+	BigDecimal minLastPrice;
+	
+	public StockFilter(String filename) {
+		getConfFromFile(filename);
+	}
 	
 	public void getConfFromFile(String confFileName) {
 		Configurations configs = new Configurations();
@@ -23,13 +27,16 @@ public class StockFilter {
 			e.printStackTrace();
 			return;
 		}
-		//setConf(config.getLong("StockFilter.minAvgVol"))
+		setConf(config.getLong("StockFilter.minAvgVol"),
+				config.getInt("StockFilter.lastXDaysForAvg"),
+				config.getInt("StockFilter.minMarketCap"),
+				new BigDecimal(config.getDouble("StockFilter.minLastPRice")));
 	}
 	
 	public void setConf(long minAvgVol,
 			int lastXDaysForAvg,
 			int marketCap,
-			APrice lastPrice) {
+			BigDecimal lastPrice) {
 		this.minAvgVol = minAvgVol;
 		this.lastXDaysForAvg = lastXDaysForAvg;
 		this.minMarketCap = marketCap;
