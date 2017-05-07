@@ -22,10 +22,10 @@ import org.gitprof.alcolil.global.Conf;
 public class DBManager {
 
 	Map<DBSection, Lock> sectionLocks;
-	Path QuoteDB;
-	Path TradeDB;
-	Path StockDB;
-	Path AlarmDB;
+	Path quoteDB;
+	Path tradeDB;
+	Path stockDB;
+	Path alarmDB;
 	
 	private static DBManager dbManager = null;
 	
@@ -81,41 +81,50 @@ public class DBManager {
 		return null;
 	}
 	
+	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException {
+		AStockSeries stockSeries = new AStockSeries(interval);
+		ATimeSeries timeSeries;
+		ABarSeries barSeries;
+		for (String symbol : symbols) {
+			timeSeries = readFromQuoteDB(symbol);
+			barSeries = timeSeries.getBarSeries(interval);
+			stockSeries.addBarSeries(symbol, barSeries);
+		}
+		return stockSeries;
+	}
+	
 	// TODO: handle unlocking in case of excpetion
 	public ATimeSeries readFromQuoteDB(String symbol) throws IOException {
-		sectionLocks.get(QuoteDB).lock();
+		sectionLocks.get(quoteDB).lock();
 		File dir = new File(Conf.quoteDB);
 		File[] directoryListing = dir.listFiles();
 		List<String[]> csvLines;
-		ATimeSeries timeSeries = new ATimeSeries();
+		ATimeSeries timeSeries = new ATimeSeries(symbol);
 		for (File child : directoryListing) {
 			//getQuoteFileFullPath(symbol, interval);
 			//String pathname = Paths.get(Conf.quoteDB, symbol, child.getName());
 		    csvLines = readFromFile(child.getPath());
-			List<AQuote> quotes = new ArrayList<AQuote>();
+		    AInterval interval = getIntervalByFilePath(child.getPath());
+			ABarSeries barSeries = new ABarSeries(interval);
 			for (String[] csvLine : csvLines) {
-				AQuote quote = new AQuote();
-				quote.initFromCSV(csvLine);
-				quotes.add(quote);
-				csvLines.add(quote.convertToCSV());
+				barSeries.addQuote((AQuote)((new AQuote()).initFromCSV(csvLine)));
 			}
-			Enums.GraphInterval interval = getIntervalByFilePath(child.getPath());
-			timeSeries.addSeries(interval, quotes);
+			timeSeries.addBarSeries(interval, barSeries);
 		} 
-		sectionLocks.get(QuoteDB).unlock();
+		sectionLocks.get(quoteDB).unlock();
 		return null;
 	}
 	
 	// TODO: handle unlocking in case of excpetion
 	public void writeToQuoteDB(ATimeSeries timeSeries, boolean append) throws IOException {
-		sectionLocks.get(QuoteDB).lock();
+		sectionLocks.get(quoteDB).lock();
 		String symbol = timeSeries.getSymbol();
 		Path dirPath = Paths.get(Conf.quoteDB + "\\" + symbol);
 		createDir(dirPath);
 		List<AQuote> quotes;
 		List<String[]> csvLines = new ArrayList<String[]>();
-		for (Enums.GraphInterval interval : Enums.GraphInterval.values()) {
-			quotes = timeSeries.getQuotesByInterval(interval);
+		for (AInterval interval : AInterval.values()) {
+			quotes = timeSeries.getBarSeries(interval).getQuotes();
 			if (null == quotes) 
 				continue;
 			for (AQuote quote : quotes) {
@@ -124,7 +133,7 @@ public class DBManager {
 			String pathname = getQuoteFileFullPath(symbol, interval);
 			writeToFile(pathname, csvLines, append);	
 		}
-		sectionLocks.get(QuoteDB).unlock();
+		sectionLocks.get(quoteDB).unlock();
 	}
 	
 	public void rewriteToQuoteDB(ATimeSeries timeSeries) throws IOException {
@@ -143,6 +152,10 @@ public class DBManager {
 		
 	}
 	
+	public void writeToFile(String pathname, List<CSVable> csvables) {
+		
+	}
+	
 	private void writeToFile(String pathname, List<String[]> lines, boolean append) throws IOException {
 		CSVWriter csvWriter = new CSVWriter(new FileWriter(pathname, append));
 		csvWriter.writeAll(lines);
@@ -157,25 +170,31 @@ public class DBManager {
 		
 	}
 	
-	public String getQuoteFileFullPath(String symbol, Enums.GraphInterval interval) {
+	public String getQuoteFileFullPath(String symbol, AInterval interval) {
 		return Paths.get(Conf.quoteDB, symbol, symbol + "_" + interval.toString()).toString();  
 	}
 	
-	private Enums.GraphInterval getIntervalByFilePath(String pathname) throws IOException {
-		Enums.GraphInterval interval = null;
-		if (pathname.contains(Enums.GraphInterval.ONE_MIN.toString())) {
-			interval = Enums.GraphInterval.ONE_MIN;
-		} else if (pathname.contains(Enums.GraphInterval.FIVE_MIN.toString())) {
-			interval = Enums.GraphInterval.FIVE_MIN;
-		} else if (pathname.contains(Enums.GraphInterval.DAILY.toString())) {
-			interval = Enums.GraphInterval.DAILY;
+	private AInterval getIntervalByFilePath(String pathname) throws IOException {
+		AInterval interval = null;
+		if (pathname.contains(AInterval.ONE_MIN.toString())) {
+			interval = AInterval.ONE_MIN;
+		} else if (pathname.contains(AInterval.FIVE_MIN.toString())) {
+			interval = AInterval.FIVE_MIN;
+		} else if (pathname.contains(AInterval.DAILY.toString())) {
+			interval = AInterval.DAILY;
 		} else {
 			throw new IOException();
 		}
 		return interval;
 	}
 	
-	
-	
+	public AStockCollection getStockCollection() throws IOException {
+		AStockCollection stockCollection = new AStockCollection();
+		List<String[]> csvLines = readFromFile(stockDB.toString());
+		for (String[] csvLine : csvLines) {
+			stockCollection.add((AStock)(new AStock()).initFromCSV(csvLine));
+		}
+		return stockCollection;
+	}
 	
 }

@@ -5,5 +5,5 @@ public interface CSVable {
 
 	public String[] convertToCSV();
 	
-	public void initFromCSV(String[] csvs);
+	public CSVable initFromCSV(String[] csvs);
 }

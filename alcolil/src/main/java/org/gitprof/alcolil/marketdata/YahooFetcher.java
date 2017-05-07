@@ -1,5 +1,6 @@
 package org.gitprof.alcolil.marketdata;
 
+import java.lang.Thread;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Random;
@@ -12,22 +13,25 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.common.AInterval;
+
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
 import yahoofinance.histquotes.Interval;
 
-import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.common.Enums.GraphInterval;
-//import org.gitprof.alcolil.scanner.QuoteQueue;
+import org.gitprof.alcolil.core.Core;
 
 public class YahooFetcher extends BaseFetcher {
 
-	HistoricalDataHandler historicalDataHandler;
+	protected static final Logger LOG = LogManager.getLogger(Core.class);
+	QuoteStreamScatter quoteStreamingHandler;
+	Thread quoteStreamingHandlerThread = null;
 	//private Map<Integer, ABarSeries> jobs;
 	//private Set<Integer> jobIds;
-
-	
 	
 	public YahooFetcher( ) {
 		//super(quoteQueue);
@@ -45,111 +49,48 @@ public class YahooFetcher extends BaseFetcher {
 		
 	}
 	
-
-	private class RealTimeDatahandler implements Runnable {
-
-		
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			
-		}
-		
-	}
-	
-	// holds list of jobs (requests lines)
-	// everytime pick one line, and push to QuoteQueue the next quote in from line.
-	private class HistoricalDataHandler implements Runnable {
-		
-		public AtomicBoolean stop;
-		private QuoteQueue quoteQueue;
-		private List<ABarSeries> jobs;
-		private Map<ABarSeries, Iterator<AQuote>> iterators;
-		
-		public HistoricalDataHandler(QuoteQueue quoteQueue) {
-			stop = new AtomicBoolean();
-			jobs = new ArrayList<ABarSeries>();
-			iterators = new HashMap<ABarSeries, Iterator<AQuote>>();
-			stop.set(false);
-			this.quoteQueue = quoteQueue;
-		}
-		
-		private void removeJob(ABarSeries barSeries) {
-			accessJobs(barSeries, false);
-		}
-		
-		private void addJob(ABarSeries barSeries) {
-			accessJobs(barSeries, true);
-		}
-		
-		private synchronized void accessJobs(ABarSeries barSeries, boolean addRemove) {
-			
-			//TODO: add job to jobs, and initialize iterator in iterators
-		}
-		
-		private void executeJob(AQuote quote) {
-			if (null == quote) {
-				return;
-			}
-			quoteQueue.push(quote);	
-		}
-		
-		public void jobExecutionLoop() {
-			ABarSeries barSeries;
-			AQuote nextQuote;
-			while(stop.get()) {
-				barSeries = jobs.get(new Random().nextInt(jobs.size()));
-				nextQuote = iterators.get(barSeries).next();
-				if (null == nextQuote) {
-					removeJob(barSeries);
-				}
-				executeJob(nextQuote);
-			}
-		}
-
-		@Override
-		public void run() {
-			jobExecutionLoop();
-		}
-	}
-	
 	@Override
 	public void activateStreaming(QuoteQueue quoteQueue) {
-		historicalDataHandler = new HistoricalDataHandler(quoteQueue);
-		new Thread(historicalDataHandler).start();
+		quoteStreamingHandler = new QuoteStreamScatter(quoteQueue);
+		quoteStreamingHandlerThread = new Thread(quoteStreamingHandler);
+		quoteStreamingHandlerThread.start();
 	}
 
 	@Override
 	public void deactivateStreaming() {
-		historicalDataHandler.stop.set(true);
+		quoteStreamingHandler.stop.set(true);
+		try {
+			quoteStreamingHandlerThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
-	public void fetchRealTimeData(String symbol, Enums.GraphInterval graphInterval, ATime from) {
+	public void postRealTimeJobLine(String symbol, AInterval graphInterval, ATime from) {
+		LOG.error("Yahoo fetcher does not implement real time data!");
+	}
+	
+	public void postHistoricalDataJobLine(String symbol, AInterval graphInterval, ATime from, ATime to) {
 		ABarSeries barSeries =  getHistoricalData(symbol, graphInterval, from, null);
-		historicalDataHandler.addJob(barSeries);
+		quoteStreamingHandler.addJob(barSeries);
 	}
 	
 	@Override
-	public void fetchHistoricalData(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
-		
-	}
-	
-	@Override
-	public ABarSeries getHistoricalData(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
-		if (graphInterval == GraphInterval.FIVE_MIN ||
-				graphInterval == GraphInterval.ONE_MIN)
+	public ABarSeries getHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
+		if (graphInterval == AInterval.FIVE_MIN ||
+				graphInterval == AInterval.ONE_MIN)
 			return getHistoricalIntraDay(symbol, graphInterval, from, to);
 		else
 			return getHistoricalAboveDaily(symbol, graphInterval, from, to);
 	}
 	
-	private ABarSeries getHistoricalIntraDay(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
+	private ABarSeries getHistoricalIntraDay(String symbol, AInterval graphInterval, ATime from, ATime to) {
 		return null;
 	}
 	
 	//returns daily quotes
-	private ABarSeries getHistoricalAboveDaily(String symbol, Enums.GraphInterval graphInterval, ATime from, ATime to) {
+	private ABarSeries getHistoricalAboveDaily(String symbol, AInterval graphInterval, ATime from, ATime to) {
 		Stock yahooStock;
 		ABarSeries barSeries = new ABarSeries();
 		try {
@@ -164,10 +105,6 @@ public class YahooFetcher extends BaseFetcher {
 		}
 		return barSeries;
 	}
-
-	private HistoricalQuote convertToYahooQuote(AQuote quote) {
-		return null;
-	}
 	
 	private AQuote convertFromYahooQuote(HistoricalQuote yahooQuote) {
 		AQuote quote = new AQuote(yahooQuote.getSymbol(),
@@ -176,7 +113,7 @@ public class YahooFetcher extends BaseFetcher {
 				yahooQuote.getLow(),
 				yahooQuote.getClose(),
 				yahooQuote.getVolume().intValue(),
-				Enums.GraphInterval.DAILY, // TODO: fix this shit
+				AInterval.DAILY, // TODO: fix this shit
 				convertFromYahooDate(yahooQuote.getDate()));
 		return quote;								
 	}
@@ -185,15 +122,15 @@ public class YahooFetcher extends BaseFetcher {
 		return null; // TODO
 	}
 	
-	private Enums.GraphInterval convertFromYahooInterval(Interval yahooInterval) {
+	private AInterval convertFromYahooInterval(Interval yahooInterval) {
 		if (yahooInterval == Interval.DAILY) {
-			return Enums.GraphInterval.DAILY;
+			return AInterval.DAILY;
 		} 
 		return null;
 	}
 	
-	private Interval convertToYahooInterval(Enums.GraphInterval interval) {
-		if (interval == Enums.GraphInterval.DAILY) {
+	private Interval convertToYahooInterval(AInterval interval) {
+		if (interval == AInterval.DAILY) {
 			return Interval.DAILY;
 		} 
 		return null;

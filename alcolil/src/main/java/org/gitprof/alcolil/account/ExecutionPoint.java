@@ -1,4 +1,4 @@
-package org.gitprof.alcolil.ordering;
+package org.gitprof.alcolil.account;
 
 import org.gitprof.alcolil.common.*;
 import java.math.BigDecimal;

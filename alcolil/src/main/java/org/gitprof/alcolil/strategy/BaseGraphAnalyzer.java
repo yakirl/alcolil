@@ -4,9 +4,9 @@ import org.gitprof.alcolil.common.*;
 
 public abstract class BaseGraphAnalyzer {
 
-	Enums.GraphInterval barInterval;
+	AInterval barInterval;
 	
-	public Enums.GraphInterval getInterval() {
+	public AInterval getInterval() {
 		return barInterval;
 	}
 }

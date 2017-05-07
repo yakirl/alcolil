@@ -11,9 +11,10 @@ public class AQuote implements CSVable {
 	private BigDecimal alow;
 	private BigDecimal aclose;
 	private long avolume;
-	private Enums.GraphInterval ainterval;
+	private AInterval ainterval;
 	private ATime atime;
 	private boolean alive = false;
+	private boolean eof = false;
 	
 	public AQuote(String symbol,
 			BigDecimal open,
@@ -21,7 +22,7 @@ public class AQuote implements CSVable {
 			BigDecimal low,
 			BigDecimal close,
 			Integer volume,
-			Enums.GraphInterval interval,
+			AInterval interval,
 			ATime time) {
 		this.asymbol = symbol;
 		this.aopen = open;
@@ -41,6 +42,14 @@ public class AQuote implements CSVable {
 	// 'dead quote' builder
 	public AQuote() {
 		
+	}
+	
+	public void setEof() {
+		eof = true;
+	}
+	
+	public boolean eof() {
+		return eof;
 	}
 	
 	public String symbol() {
@@ -67,7 +76,7 @@ public class AQuote implements CSVable {
 		return avolume;
 	}
 		
-	public Enums.GraphInterval interval() {
+	public AInterval interval() {
 		return ainterval;
 	}
 	
@@ -95,7 +104,7 @@ public class AQuote implements CSVable {
 		this.avolume = volume;
 	}
 	
-	public void interval(Enums.GraphInterval interval) {
+	public void interval(AInterval interval) {
 		this.ainterval = interval;
 	}
 	
@@ -123,15 +132,15 @@ public class AQuote implements CSVable {
 		return fields;
 	}
 	
-	public void initFromCSV(String[] csvs) {
+	public CSVable initFromCSV(String[] csvs) {
 		asymbol = csvs[0];
 		aopen = new BigDecimal(csvs[1]);
 		ahigh = new BigDecimal(csvs[2]);
 		alow = new BigDecimal(csvs[3]);
 		aclose = new BigDecimal(csvs[4]);
 		avolume = new Integer(csvs[5]);
-		ainterval = Enums.GraphInterval.valueOf(csvs[6]);
+		ainterval = AInterval.valueOf(csvs[6]);
 		atime = new ATime(csvs[7]);
-		
+		return this;
 	}
 }

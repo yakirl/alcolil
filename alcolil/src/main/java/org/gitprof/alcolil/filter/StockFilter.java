@@ -1,10 +1,15 @@
 package org.gitprof.alcolil.filter;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.XMLConfiguration;
 
 import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.strategy.AlphaGraphAnalyzer;
 
 public class StockFilter {
 	
@@ -14,7 +19,7 @@ public class StockFilter {
 	BigDecimal minLastPrice;
 	
 	public StockFilter(String filename) {
-		getConfFromFile(filename);
+		//getConfFromFile(filename);
 	}
 	
 	public void getConfFromFile(String confFileName) {
@@ -34,31 +39,31 @@ public class StockFilter {
 	}
 	
 	public void setConf(long minAvgVol,
-			int lastXDaysForAvg,
-			int marketCap,
-			BigDecimal lastPrice) {
+						int lastXDaysForAvg,
+						int marketCap,
+						BigDecimal lastPrice) {
 		this.minAvgVol = minAvgVol;
 		this.lastXDaysForAvg = lastXDaysForAvg;
 		this.minMarketCap = marketCap;
 		this.minLastPrice = lastPrice;
 	}
 	
-	private long avgVolofLastXDays(AStock stock) {
-		long avgVol = 0;
-		// calc
+	private long avgVolofLastXDays(AStock stock) throws IOException {
+		ATimeSeries timeSeries = DBManager.getInstance().readFromQuoteDB(stock.getSymbol());
+		long avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
 		return avgVol;
 	}
 	
-	private boolean isMatch(AStock stock){
+	private boolean isMatch(AStock stock) throws IOException{
 		boolean ret = true;
 		if ((avgVolofLastXDays(stock) < minAvgVol) ||
 				(stock.getMarketCap() < minMarketCap) ||
-				(stock.getLastPrice().getDouble() < minLastPrice.getDouble()))
+				(stock.getLastPrice().doubleValue() < minLastPrice.doubleValue()))
 			ret = false;
 		return ret;
 	}
 	
-	public AStockCollection filter(AStockCollection stockCollection) {
+	public AStockCollection filter(AStockCollection stockCollection) throws IOException {
 		AStockCollection filteredCollection = new AStockCollection();
 		for (AStock stock : stockCollection) {
 			if(isMatch(stock)) {

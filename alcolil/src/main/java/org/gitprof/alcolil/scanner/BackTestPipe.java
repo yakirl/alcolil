@@ -2,10 +2,14 @@ package org.gitprof.alcolil.scanner;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.List;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
+import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
+import org.gitprof.alcolil.marketdata.BaseFetcher;
+import org.gitprof.alcolil.marketdata.QuoteQueue;
 //import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
 
 /*
@@ -18,72 +22,70 @@ import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
  */
 public class BackTestPipe extends BaseQuotePipe {
 
-	AStockCollection stocks;
+	AStockSeries stocks;
 	Map<String, ATimeSeries> quotesMapping;
-	int delayBetweenQuotes = 0;
+	AInterval interval;
 	ATime start = null;
 	ATime stop = null;
 	DBManager dbManager;
+	PipeSource pipeSource;
 	
-	public BackTestPipe(AStockCollection stocks, ATime from, ATime to) {
+	public enum PipeSource {
+		LOCAL, REMOTE
+	}
+	
+	public BackTestPipe(PipeSource pipeSource, AStockSeries stocks, AInterval interval, ATime from, ATime to) {
 		this.stocks = stocks;
+		this.interval = interval;
 		start = from;
 		stop = to;
 		dbManager = DBManager.getInstance();
+		this.pipeSource = pipeSource;
 		//getHistoricalData();
 	}
 
-	public BackTestPipe(AStockCollection stocks) {
+	public BackTestPipe(AStockSeries stocks) {
 		this.stocks = stocks;
 		dbManager = DBManager.getInstance();
-		//getHistoricalData();
 	}
 	
-	@Override
-	public AQuote getNextQuote() {
-		AQuote nextQuote = quoteQueuePoll(3);
-		return nextQuote;
-	}
-	
-	private void closePipe() {
+	// TODO
+	private void getRemoteHistoricalData(BaseFetcher fetcher) {
+		fetcher.connect();
+		
+		fetcher.disconnect();
+		
+		
+		// fetcher.fetchHistoricalData(symbol, graphInterval, from, to);
 		
 	}
 	
-	private void pushQuotesLoop() {
-		while(true) {
-			try {
-				Thread.sleep(delayBetweenQuotes);  // should do something nicer than that...
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			// if we are done pushing than push dead Quote
-			
-		}
-	}
-	
-	// use marketDataFetcher
-	private void getRemoteHistoricalData() {
-		
-	}
-	
-	// use HistoricalDataUpdater
-	private void getLocalHistoricalData(AStockCollection stocks) {
+	// no use of HistUpdater!
+	private void startStreamingFromLocalDB() {
 		try {
-			HistoricalDataUpdater updater = new HistoricalDataUpdater(stocks);
-			updater.getLocalStockSeries(stocks.getSymbols());
+			List<String> symbols = stocks.getSymbolList();
+			AStockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
+			quoteQueue = new QuoteQueue();
+			QuoteStreamScatter quoteStreamScatter = new QuoteStreamScatter(quoteQueue, stocks);
+			// Thread handlerThread = new Thread(quoteStreamingHandler);
+			// handlerThread.start();
+			quoteStreamScatter.startStreaming();
 		} catch (IOException e) {
 			e.printStackTrace();
 			closePipe();
 		}
-		pushQuotesLoop();
-		
 	}
 
+	private void fetchHistoricalDataFromRemote() {
+	 // TODO	
+	}
+	
 	@Override
 	public void run() {
-		getLocalHistoricalData();
-		
+		if (PipeSource.LOCAL == pipeSource) 
+			startStreamingFromLocalDB();
+		else // REMOTE
+			fetchHistoricalDataFromRemote();
 	}
 
 	

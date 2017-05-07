@@ -11,7 +11,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  * and enabling tracking of multi stocks simulatenouly
  * 
  * Both real time pipe and backtest pipe offer the same interface for pulling quotes:
- * the user construct the pipe with given stock collection to track, start time & end time. 
+ * the user construct the pipe with given stock collection to track, given interval, start time & end time. 
  * 	# note: -for realtime pipe we usually give only start point. in order to stop, the scanner will interrupt the pipe upon user request
  *  #             or in case the fetcher stop obtaining data (e.g. market closed)
  *  #       -for backtest - if no interval is given, than the pipe will pull the maximum available data from the fetcher
@@ -32,7 +32,7 @@ public abstract class BaseQuotePipe implements Runnable {
 	AtomicBoolean closePipe;
 	
 	public void setMarketDataFetcher() {
-		fetcher = BaseFetcher.getDefaultFetcher(quoteQueue);
+		fetcher = BaseFetcher.getDefaultFetcher();
 	}
 	
 	public BaseQuotePipe() {
@@ -44,11 +44,6 @@ public abstract class BaseQuotePipe implements Runnable {
 		closePipe.set(true);
 	}
 	
-	private void startQuoteStreaming() {
-		fetcher.connect();
-		//fetcher.startRealTimeFetching();
-	}
-	
 	public abstract void run();
 	
 	public void quoteQueuePush(AQuote quote) {
@@ -56,34 +51,10 @@ public abstract class BaseQuotePipe implements Runnable {
 	}
 	
 	/*
-	 * the delay option should be removed here
-	 * since the delay is done in the insertion time
-	 */
-	public AQuote quoteQueuePoll(int waitForXSec) {
-		AQuote quote;
-		int sleepTime = 500; // millis
-		int iterations = 0;
-		while(true) {
-			quote = quoteQueue.pop();
-			if (null != quote)
-				break;
-			++iterations;
-			try {
-				Thread.sleep(sleepTime);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (((1000 / sleepTime) * iterations) >= waitForXSec)
-				break;
-			
-		}
-		
-		return quote;
-	}
-	
-	/*
 	 * this method is used for getting any next quote - daily/intraday, history/realtime
 	 */
-	public abstract AQuote getNextQuote();
+	public AQuote getNextQuote() {
+		AQuote nextQuote = quoteQueue.pop();
+		return nextQuote;
+	}
 }

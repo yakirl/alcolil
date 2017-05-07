@@ -5,6 +5,9 @@ import java.util.ArrayDeque;
 
 import org.gitprof.alcolil.common.*;
 
+/*
+ * Just a Thread-safe implementation of ArrayDeuqe of Quotes
+ */
 public class QuoteQueue {
 
 	Queue<AQuote> quotes;

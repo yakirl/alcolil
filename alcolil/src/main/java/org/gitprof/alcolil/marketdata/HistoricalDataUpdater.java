@@ -18,21 +18,26 @@ public class HistoricalDataUpdater {
 	//private static String symbolFile;
 	// we use pipe and not directly marketDataFetcher
 	private AStockCollection stocks;
-	private BackTestPipe quotePipe;
+	//private BackTestPipe quotePipe;
 	
 	public HistoricalDataUpdater(AStockCollection stocks) {
 		this.stocks = stocks;
 		//this.quotePipe  = new BackTestPipe();
 	}
 	
+	public HistoricalDataUpdater(String stocksFilename) throws IOException {
+		this.stocks = DBManager.getInstance().getStockCollection();
+		//this.quotePipe  = new BackTestPipe();
+	}
+	
 	// takes historicalData from remote - using QuotePipe
-	public ATimeSeries getRemoteHistoricalData(AStock stock) {
+	private ATimeSeries getRemoteHistoricalData(AStock stock) {
 		AStockCollection tmpStocks = new AStockCollection();
 		tmpStocks.add(stock);
 		ATimeSeries timeSeries = new ATimeSeries(stock.getSymbol());
 		BackTestPipe quotePipe = new BackTestPipe(tmpStocks);
 		Thread quotePipeThread = new Thread(quotePipe);
-		quotePipeThread.start(); // return immediately
+		quotePipeThread.start();
 		AQuote quote;
 		while(true) {
 			quote = quotePipe.getNextQuote();
@@ -45,14 +50,14 @@ public class HistoricalDataUpdater {
 	}
 	
 	// takes historicalData from DB
-	public ATimeSeries getLocalTimeSeries(String symbol) throws IOException {
+	private ATimeSeries getLocalTimeSeries(String symbol) throws IOException {
 		return DBManager.getInstance().readFromQuoteDB(symbol);
 	}
 	
-	public Map<String, ATimeSeries> getLocalStockSeries(String[] symbols) throws IOException {
-		Map<String, ATimeSeries> stockSeries = new HashMap<String, ATimeSeries>();
+	private AStockSeries getLocalStockSeries(String[] symbols) throws IOException {
+		AStockSeries stockSeries = new AStockSeries();
 		for (String symbol : symbols) {
-			stockSeries.put(symbol,getLocalTimeSeries(symbol));
+			stockSeries.addTimeSeries(symbol, getLocalTimeSeries(symbol));
 		}
 		return stockSeries;
 	}

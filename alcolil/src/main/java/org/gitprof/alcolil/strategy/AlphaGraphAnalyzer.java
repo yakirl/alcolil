@@ -23,6 +23,10 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		this.barSeries = barSeries;
 	}
 	
+	public long avgVolofXDays(int numDays, ATime endTime) {
+		return 0;
+	}
+	
 	public class RankedQuote implements Comparable<RankedQuote> {
 		public AQuote quote;
 		public double rank;
@@ -51,16 +55,16 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		if ((!bwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 			return 0;
 		}
-		ListIterator<AQuote> fwdItr = barSeries.listIterator(bwdItr.nextIndex()-1);
+		ListIterator<AQuote> fwdItr = null; // barSeries.listIterator(bwdItr.nextIndex()-1);
 		bwdItr.next();
 		//MathContext mc = new MathContext(2);
 		int d; for (d = 0; d < D_MAX; d++) {
 			if ((!fwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 					break;
 			}
-			double curr = currQuote.low().getDouble();
-			double prev = bwdItr.previous().low().getDouble();
-			double next = fwdItr.next().low().getDouble();
+			double curr = currQuote.low().doubleValue();
+			double prev = bwdItr.previous().low().doubleValue();
+			double next = fwdItr.next().low().doubleValue();
 			double leftDis  = prev - curr;
 			double rightDis = next - curr;
 			if (leftDis < 0 || rightDis < 0) {
@@ -75,9 +79,9 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 	public void findSupports() {
 		PriorityQueue<RankedQuote> supports = new PriorityQueue<RankedQuote>();
 		int ix; for (ix = 0; ix < barSeries.size(); ix++) {
-			double supportRank = calcSupportRank(barSeries.listIterator(ix), barSeries.getQuote(ix));
-			RankedQuote rankedQuote = new RankedQuote(barSeries.getQuote(ix), supportRank);
-			supports.add(rankedQuote);
+			//double supportRank = calcSupportRank(barSeries.listIterator(ix), barSeries.getQuote(ix));
+			//RankedQuote rankedQuote = new RankedQuote(barSeries.getQuote(ix), supportRank);
+			//supports.add(rankedQuote);
 		}
 		System.out.println("*******");
 		for (ix = 0; ix < 5; ix++) {

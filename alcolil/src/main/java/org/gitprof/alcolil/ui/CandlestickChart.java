@@ -31,7 +31,7 @@ import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 
-public class JChartMaker extends BaseChartMaker {
+public class CandlestickChart extends BaseChart {
 
 	private static final DateFormat READABLE_TIME_FORMAT = new SimpleDateFormat("kk:mm:ss");
 
@@ -48,8 +48,12 @@ public class JChartMaker extends BaseChartMaker {
 	private double high = 0.0;
 	private long volume = 0;
 
-	public JChartMaker(String title) {
+	public CandlestickChart(String title) {
 	
+	}
+	
+	public CandlestickChart() {
+		
 	}
 
 	

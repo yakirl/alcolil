@@ -1,20 +1,32 @@
 package org.gitprof.alcolil.scanner;
 
-//import org.gitprof.alcolil.strategy.BaseAnalyzer;
-import org.gitprof.alcolil.common.ATime;
-import org.gitprof.alcolil.common.AStockCollection;
+import java.lang.Thread;
+
+import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.scanner.CoreScanner;
 
 public class BackTester {
 	
-	public void backTest(ATime from, ATime to) {
-		// load stockCollection from default file, 
-		// load default analyzer
+	CoreScanner coreScanner;
+	Thread scannerThread; 
+	
+	public void setConfs() {
+		
 	}
 	
-	public void backTest(AStockCollection stocks, ATime from, ATime to) {
-		CoreScanner coreScanner = new CoreScanner(stocks, from, to);
-		coreScanner.backtest(stocks, from, to);
+	public void backTest(AStockSeries stocks, AInterval interval, ATime from, ATime to) {
+		coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, stocks, interval, from, to);
+		scannerThread = new Thread(coreScanner);
+		scannerThread.start();
+	}
+	
+	public void stop() {
+		coreScanner.stop();
+		try {
+			scannerThread.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

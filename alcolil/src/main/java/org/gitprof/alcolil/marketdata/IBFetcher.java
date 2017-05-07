@@ -5,9 +5,10 @@ import org.gitprof.alcolil.common.*;
 
 public class IBFetcher extends BaseFetcher {
 
-	public IBFetcher(QuoteQueue quoteQueue) {
-		this.quoteQueue = quoteQueue;
+	public IBFetcher() {
+		//this.quoteQueue = quoteQueue;
 	}
+	
 	@Override
 	public void connect() {
 		// TODO Auto-generated method stub
@@ -21,22 +22,47 @@ public class IBFetcher extends BaseFetcher {
 	}
 
 	@Override
-	public ATimeSeries getHistory(String symbol, Enums.GraphInterval interval, ATime from, ATime to) {
+	public void activateStreaming(QuoteQueue quoteQueue) {
+		// TODO Auto-generated method stub
 		
-		ATimeSeries aTimeSeries = new ATimeSeries();
-		return aTimeSeries;
+	}
+	@Override
+	public void deactivateStreaming() {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void fetchHistoricalData(String symbol, GraphInterval graphInterval, ATime from, ATime to) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void fetchRealTimeData(String symbol, GraphInterval graphInterval, ATime from) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public ABarSeries getHistoricalData(String symbol, GraphInterval graphInterval, ATime from, ATime to) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public void startRealTimeFetching(String symbol, Enums.GraphInterval graphInterval, ATime from) {
+	public void fetchHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
 		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
-	public void StopRealTimeFetching(String symbol, Enums.GraphInterval graphInterval) {
+	public void fetchRealTimeData(String symbol, AInterval graphInterval, ATime from) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public ABarSeries getHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

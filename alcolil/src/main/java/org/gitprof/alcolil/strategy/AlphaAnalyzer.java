@@ -10,7 +10,7 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 	
 	@Override
 	public void initialize(ATimeSeries timeSeries) {
-		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(Enums.GraphInterval.ONE_MIN));
+		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.ONE_MIN));
 		super.setGraphAnalyzer(oneMinAnalyzer);
 		//AlphaGraphAnalyzer fiveMinAnalyzer = new AlphaGraphAnalyzer();
 		//super.setGraphAnalyzer(fiveMinAnalyzer);
@@ -18,16 +18,27 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 
 	@Override
 	public void updateNextQuote(AQuote quote) {
+		super.updateNextQuote(quote);
 		updateOneMinGraph(quote);
 		updateFiveMinGraph(quote);
-		
+		demoAnalyzing(quote);
 	}
 	
-	public void updateOneMinGraph(AQuote quote) {
-		BaseGraphAnalyzer graphAnalyzer = graphs.get(Enums.GraphInterval.ONE_MIN);
+	private void updateOneMinGraph(AQuote quote) {
+		BaseGraphAnalyzer graphAnalyzer = graphs.get(AInterval.ONE_MIN);
 	}
 	
-	public void updateFiveMinGraph(AQuote quote) {
+	private void updateFiveMinGraph(AQuote quote) {
 
+	}
+	
+	private void demoAnalyzing(AQuote quote) {
+		if (50.0 < quote.high().floatValue()) {
+			alert(quote);
+		}
+	}
+	
+	private void alert(AQuote quote) {
+		alertingSystem.alert(quote);
 	}
 }

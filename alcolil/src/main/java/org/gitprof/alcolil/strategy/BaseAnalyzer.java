@@ -2,12 +2,15 @@ package org.gitprof.alcolil.strategy;
 
 import java.util.Map;
 
+import org.gitprof.alcolil.account.AlertingSystem;
 import org.gitprof.alcolil.common.*;
 
 public abstract class BaseAnalyzer {
 
 	String symbol;
-	Map<Enums.GraphInterval, BaseGraphAnalyzer> graphs;
+	Map<AInterval, BaseGraphAnalyzer> graphs;
+	ATimeSeries timeSeries;
+	AlertingSystem alertingSystem;
 	
 	public abstract void initialize(ATimeSeries timeSeries);
 	
@@ -15,5 +18,7 @@ public abstract class BaseAnalyzer {
 		graphs.put(graphAnalyzer.getInterval(), graphAnalyzer);
 	}
 	
-	public abstract void updateNextQuote(AQuote quote);
+	public void updateNextQuote(AQuote quote) {
+		timeSeries.addQuote(quote);
+	}
 }
