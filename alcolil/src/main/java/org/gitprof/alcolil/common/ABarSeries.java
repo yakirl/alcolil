@@ -40,7 +40,7 @@ public class ABarSeries implements Iterable<AQuote> {
 	}
 	
 	public void addQuote(AQuote quote) {
-		assert doNotModify : "Error! attempt to modify BarSeries while under iteration!";
+		assert doNotModify == false : "Error! attempt to modify BarSeries while under iteration!";
 		quotes.add(quote);
 		if (observers.size() != 0) {
 			notifyObservers(quote);

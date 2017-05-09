@@ -7,11 +7,11 @@ import org.gitprof.alcolil.database.CSVable;;
 public class AStock implements CSVable {
 	private String symbol;
 	private String sector;
-	private long marketCap;
+	private BigDecimal marketCap;
 	private BigDecimal lastPrice;
-	private long avgVolOfXDays;
+	private BigDecimal avgVolOfXDays;
 	
-	public long getMarketCap() {
+	public BigDecimal getMarketCap() {
 		return marketCap;
 	}
 	
@@ -21,6 +21,10 @@ public class AStock implements CSVable {
 	
 	public String getSymbol() {
 		return symbol;
+	}
+	
+	public String getSector() {
+	    return sector;
 	}
 
 	@Override
@@ -38,9 +42,9 @@ public class AStock implements CSVable {
 	public CSVable initFromCSV(String[] csvs) {
 		symbol = csvs[0];
 		sector = csvs[1];
-		marketCap = new Integer(csvs[2]);
+		marketCap = new BigDecimal(csvs[2]);
 		lastPrice = new BigDecimal(csvs[3]);
-		avgVolOfXDays = new Integer(csvs[4]);
+		avgVolOfXDays = new BigDecimal(csvs[4]);
 		return this;
 	}
 }

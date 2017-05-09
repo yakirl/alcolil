@@ -24,8 +24,8 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		this.barSeries = barSeries;
 	}
 	
-	public long avgVolofXDays(int numDays, ATime endTime) {
-		return 0;
+	public BigDecimal avgVolofXDays(int numDays, ATime endTime) {
+		return new BigDecimal(0);
 	}
 	
 	public class RankedQuote implements Comparable<RankedQuote> {

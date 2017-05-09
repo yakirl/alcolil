@@ -1,26 +1,22 @@
 package org.gitprof.alcolil.common;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
 
 public class AStockCollection implements Iterable<AStock> {
  
-	private ArrayList<AStock> stocks;
+	private Map<String, AStock> stocks;
 	
 	public AStockCollection() {
-		stocks = new ArrayList<AStock>();
+		stocks = new HashMap<String, AStock>();
 	}
 	
 	public List<String> getSymbols() {
-		String[] symbols = new String[stocks.size()];
-		int i = 0;
-		for (AStock stock : stocks) {
-			symbols[i] = stock.getSymbol();
-			++i;
-		}
-		return new ArrayList<String>(Arrays.asList(symbols));
+	    return new ArrayList<String>(stocks.keySet());		
 	}
 	
 	public Iterator<AStock> iterator() {
@@ -28,8 +24,12 @@ public class AStockCollection implements Iterable<AStock> {
 		return null;
 	}
 	
+	public AStock getStock(String symbol) {
+	    return stocks.get(symbol);
+	}
+	
 	public void add(AStock stock) {
-		stocks.add(stock);
+		stocks.put(stock.getSymbol(), stock);
 	}
 
 }

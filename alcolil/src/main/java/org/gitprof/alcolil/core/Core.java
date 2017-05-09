@@ -37,11 +37,15 @@ public class Core
 		BACKTEST_SCANNER, REALTIME_SCANNER, ACCOUNT, INTERFACE 
 	}
 	
-	public void start(String[] args) {
+	private void setUpEnv() throws Exception {
+	    DBManager.validateDBStructure();
+	}
+	
+	public void start(String[] args) {	    
 		// runInterface();
 		// mainLoop();
 		try {
-			
+		    setUpEnv();	
 			postCommand(new Command("DO_NOTHING"));
 			commandDispatcher();
 		} catch (Exception e) {

@@ -13,9 +13,9 @@ import org.gitprof.alcolil.strategy.AlphaGraphAnalyzer;
 
 public class StockFilter {
 	
-	long minAvgVol;
+	BigDecimal minAvgVol;
 	int lastXDaysForAvg;
-	int minMarketCap;
+	BigDecimal minMarketCap;
 	BigDecimal minLastPrice;
 	
 	public StockFilter(String filename) {
@@ -32,15 +32,15 @@ public class StockFilter {
 			e.printStackTrace();
 			return;
 		}
-		setConf(config.getLong("StockFilter.minAvgVol"),
-				config.getInt("StockFilter.lastXDaysForAvg"),
-				config.getInt("StockFilter.minMarketCap"),
+		setConf(config.getBigDecimal("StockFilter.minAvgVol"),
+				config.getInt("StockFilter.lastXDaysForAvg"),				
+				config.getBigDecimal("StockFilter.minMarketCap"),
 				new BigDecimal(config.getDouble("StockFilter.minLastPRice")));
 	}
 	
-	public void setConf(long minAvgVol,
+	public void setConf(BigDecimal minAvgVol,
 						int lastXDaysForAvg,
-						int marketCap,
+						BigDecimal marketCap,
 						BigDecimal lastPrice) {
 		this.minAvgVol = minAvgVol;
 		this.lastXDaysForAvg = lastXDaysForAvg;
@@ -48,17 +48,17 @@ public class StockFilter {
 		this.minLastPrice = lastPrice;
 	}
 	
-	private long avgVolofLastXDays(AStock stock) throws IOException {
+	private BigDecimal avgVolofLastXDays(AStock stock) throws IOException {
 		ATimeSeries timeSeries = DBManager.getInstance().readFromQuoteDB(stock.getSymbol());
-		long avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
+		BigDecimal avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
 		return avgVol;
 	}
 	
 	private boolean isMatch(AStock stock) throws IOException{
 		boolean ret = true;
-		if ((avgVolofLastXDays(stock) < minAvgVol) ||
-				(stock.getMarketCap() < minMarketCap) ||
-				(stock.getLastPrice().doubleValue() < minLastPrice.doubleValue()))
+		if ((avgVolofLastXDays(stock).compareTo(minAvgVol)) == 1 ||
+		    (stock.getMarketCap().compareTo(minMarketCap) == 1) ||
+			(stock.getLastPrice().doubleValue() < minLastPrice.doubleValue()))
 			ret = false;
 		return ret;
 	}

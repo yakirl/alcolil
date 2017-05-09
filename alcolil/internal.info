@@ -1,0 +1,21 @@
+ 
+--- CLI ----------------------
+ javac -classpath [.;jar1;jar2] Main.java
+ java -classpath [.;jar1;jar2] Main
+  
+ 
+---- log4j logging ------------
+for maven and junit execution - use log4j2.xml configuration file in src/main/resources
+for java application execution - use  log4j.xml in conf
+
+--- Program ---
+conventions for measurements units:
+all in Dollars
+--------------------------------------
+measure     |    unit   |  precision |
+-------------------------------------
+price       | dollars   |  0.zz      |
+marketCap   | millions  |  0.zz      |
+volume      | millions  |  0.zz      |
+--------------------------------------
+

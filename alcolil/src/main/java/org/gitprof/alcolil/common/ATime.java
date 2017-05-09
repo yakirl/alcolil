@@ -9,7 +9,7 @@ import org.joda.time.format.DateTimeFormatter;
 /*
  * ------ date and time object ----------
  * 1. we are using the new joda-time package
- * 2. we will use this string format: yyyy-MM-dd HH:mm:ss.SSSZZ
+ * 2. we will use this string format: yyyy-MM-dd HH:mm:ss.SSS Z
  * 		SSS - milis
  * 		ZZ - timezone offset
  */
@@ -17,7 +17,7 @@ public class ATime {
 
 	//Calendar calendar;
 	DateTime dateTime;
-	String pattern = "yyyy-MM-dd HH:mm:ss.SSSZZ";
+	String pattern = "yyyy-MM-dd HH:mm:ss.SSS Z";
 	
 	public ATime(String timeStr) {
 		DateTimeFormatter fmt = DateTimeFormat.forPattern(pattern);
