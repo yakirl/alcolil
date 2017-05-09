@@ -1,14 +1,13 @@
 package org.gitprof.alcolil.core;
 
-
 import java.io.IOException;
 import java.lang.Thread;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.List;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.gitprof.alcolil.scanner.BackTester;
 import org.gitprof.alcolil.ui.UserInterface;
@@ -23,53 +22,93 @@ import org.gitprof.alcolil.marketdata.BaseFetcher;
 public class Core 
 {
 	
+	//protected static final Logger LOG = LogManager.getLogger(Core.class);
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
 	private Map<Module, Thread> threads;
 	private boolean toClose = false;
 	private AtomicReference<Command> waitingCommand;
-	
+
 	public Core() {
 		waitingCommand = new AtomicReference<Command>();
+		waitingCommand.set(new Command("DO_NOTHING"));
 	}
 	
 	private enum  Module {
 		BACKTEST_SCANNER, REALTIME_SCANNER, ACCOUNT, INTERFACE 
 	}
 	
-    public void runCommand(Command cmd) {
+	public void start(String[] args) {
+		// runInterface();
+		// mainLoop();
+		try {
+			
+			postCommand(new Command("DO_NOTHING"));
+			commandDispatcher();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+    
+	public void postCommand(Command cmd) {
+		System.out.println( "core posting command: " + cmd.opcode());
+		LOG.info("Core posting command");
     	if ("DO_NOTHING" == waitingCommand.get().opcode())
     		waitingCommand.set(cmd);
     }
 	
-	public void start() {
-		runInterface();
+	private void commandDispatcher() throws IOException {
+    	Command cmd = waitingCommand.get();
+    	LOG.info("Core dispatching command: " + cmd.opcode());
+    	if ("RUN_BACKTEST" == cmd.opcode()) {
+    		backtest(cmd.from, cmd.to);
+    	} else if ("START_REALTIME" == cmd.opcode()) {
+    		realTimeScanStart();
+    	} else if ("STOP_REALTIME" == cmd.opcode()) {
+    		realTimeScanStop();
+    	} else if ("UPDATE_DB" == cmd.opcode()) {
+    		updateLocalDB();
+    	} else if ("OPTIMIZE" == cmd.opcode()) {
+    		optimizeParameters();
+    	} else if ("CALC_STATS" == cmd.opcode()) {
+    		calcStats();
+    	} else if ("DO_NOTHING" == cmd.opcode()) {
+    		LOG.info("DO_NOTHING");
+    	} else {
+    		LOG.error("found unrecognized command!");
+    	}
     }
     
+    private void mainLoop() {
+    	while(true) {
+    		try {
+    			commandDispatcher();
+    			if (toClose) {
+    				break;
+    			}
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    }
     
-    /*
+    private void runInterface() {
+    	UserInterface.startInterface();
+    }
+	
+    /***************************
      * Main Core Functionalities: 
      *  1. backtest
      *  2. realtime scan
      *  3. update local DB
      *  4. show statistics
      *  5. run parameter optimizer 
-     */
+     ****************************/
 
-    private void updateLocalDB(String stockFilename, BaseFetcher fetcher) throws IOException {
-    	HistoricalDataUpdater updater = new HistoricalDataUpdater(stockFilename);
-    	
-    }
-    
-    private AStockCollection getStockCollection() throws IOException {
-    	DBManager dbManager = DBManager.getInstance();
-    	return dbManager.getStockCollection();
-    }
-    
     private void backtest(ATime from, ATime to) throws IOException {
-    	AStockCollection stocks = getStockCollection();
+    	List<String> symbols = DBManager.getInstance().getStockCollection().getSymbols();
     	AInterval interval = AInterval.ONE_MIN;
     	BackTester backTester = new BackTester();
-    	backTester.backTest(stocks, interval, from, to);
+    	backTester.backtest(symbols, interval, from, to);
     }
     
     private void realTimeScanStart() {
@@ -78,6 +117,11 @@ public class Core
     
     private void realTimeScanStop() {
     	
+    }
+    
+    private void updateLocalDB() throws IOException {
+    	HistoricalDataUpdater updater = new HistoricalDataUpdater();
+    	updater.updateQuoteDB();
     }
     
     private void calcStats() {
@@ -90,36 +134,5 @@ public class Core
     	paramOptimizer.optimize();
     }
       
-    private void checkWaitingCommand() throws IOException {
-    	Command cmd = waitingCommand.get();
-    	if ("RUN_BACKTEST" == cmd.opcode()) {
-    		backtest(cmd.from, cmd.to);
-    	} else if ("START_REALTIME" == cmd.opcode()) {
-    		
-    	} else if ("STOP_REALTIME" == cmd.opcode()) {
-    		
-    	} else if ("UPDATE_DB" == cmd.opcode()) {
-    		updateLocalDB();
-    	} else if ("OPTIMIZE" == cmd.opcode()) {
-    		
-    	} else {
-    		LOG.error("found unrecognized command!");
-    	}
-    }
     
-    private void mainLoop() throws IOException {
-    	while(true) {
-    		checkWaitingCommand();
-    		if (toClose) {
-    			break;
-    		}
-    	}
-    	
-    }
-    
-    private void runInterface() {
-    	UserInterface.startInterface();
-    }
-    
-
 }

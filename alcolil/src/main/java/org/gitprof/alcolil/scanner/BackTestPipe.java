@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManager;
-import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
 import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
 import org.gitprof.alcolil.marketdata.BaseFetcher;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
@@ -22,7 +21,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  */
 public class BackTestPipe extends BaseQuotePipe {
 
-	AStockSeries stocks;
+	List<String> symbols;
 	Map<String, ATimeSeries> quotesMapping;
 	AInterval interval;
 	ATime start = null;
@@ -34,50 +33,43 @@ public class BackTestPipe extends BaseQuotePipe {
 		LOCAL, REMOTE
 	}
 	
-	public BackTestPipe(PipeSource pipeSource, AStockSeries stocks, AInterval interval, ATime from, ATime to) {
-		this.stocks = stocks;
+	public BackTestPipe(PipeSource pipeSource, List<String> sybmols, AInterval interval, ATime from, ATime to) {
+		this.symbols = symbols;
 		this.interval = interval;
 		start = from;
 		stop = to;
 		dbManager = DBManager.getInstance();
 		this.pipeSource = pipeSource;
-		//getHistoricalData();
 	}
 
-	public BackTestPipe(AStockSeries stocks) {
-		this.stocks = stocks;
+	public BackTestPipe(List<String> symbols, AInterval interval) {
+		this.symbols = symbols;
+		this.interval = interval;
 		dbManager = DBManager.getInstance();
 	}
 	
-	// TODO
-	private void getRemoteHistoricalData(BaseFetcher fetcher) {
+	public AStockSeries getRemoteHistoricalData() {
 		fetcher.connect();
-		
+		AStockSeries stockSeries = new AStockSeries(interval);
+		ABarSeries barSeries;
+		for (String symbol : symbols) {
+			barSeries = fetcher.getHistoricalData(symbol, interval, start, stop);
+			stockSeries.addBarSeries(symbol, barSeries);
+		}
 		fetcher.disconnect();
-		
-		
-		// fetcher.fetchHistoricalData(symbol, graphInterval, from, to);
-		
+		return stockSeries;
 	}
 	
-	// no use of HistUpdater!
 	private void startStreamingFromLocalDB() {
 		try {
-			List<String> symbols = stocks.getSymbolList();
 			AStockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
 			quoteQueue = new QuoteQueue();
-			QuoteStreamScatter quoteStreamScatter = new QuoteStreamScatter(quoteQueue, stocks);
-			// Thread handlerThread = new Thread(quoteStreamingHandler);
-			// handlerThread.start();
+			QuoteStreamScatter quoteStreamScatter = new QuoteStreamScatter(quoteQueue, stockSeries);
 			quoteStreamScatter.startStreaming();
 		} catch (IOException e) {
 			e.printStackTrace();
 			closePipe();
 		}
-	}
-
-	private void fetchHistoricalDataFromRemote() {
-	 // TODO	
 	}
 	
 	@Override
@@ -85,7 +77,7 @@ public class BackTestPipe extends BaseQuotePipe {
 		if (PipeSource.LOCAL == pipeSource) 
 			startStreamingFromLocalDB();
 		else // REMOTE
-			fetchHistoricalDataFromRemote();
+			assert false : "Backtest pipe doesnt support getting historical data async!";
 	}
 
 	

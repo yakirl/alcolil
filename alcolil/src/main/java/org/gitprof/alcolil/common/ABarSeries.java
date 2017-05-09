@@ -12,6 +12,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
 
 public class ABarSeries implements Iterable<AQuote> {
 
+	private String symbol;
 	private AInterval interval;
 	private List<AQuote> quotes;
 	private Iterator<AQuote> quoteIterator;
@@ -26,6 +27,10 @@ public class ABarSeries implements Iterable<AQuote> {
 		localObserver = new QuoteQueue();
 	}
 
+	public String getSymbol() {
+		return symbol;
+	}
+	
 	public AInterval getInterval() {
 		return interval;
 	}

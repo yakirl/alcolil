@@ -71,12 +71,12 @@ public abstract class BaseFetcher {
 	public abstract void deactivateStreaming();
 	
 	
-	public abstract void postHistoricalDataJobLine(String symbol, AInterval graphInterval, ATime from, ATime to);
+	public abstract void postHistoricalDataJobLine(String symbol, AInterval interval, ATime from, ATime to);
 	
 	// send to the streaming thread  a realtimeData request / job
-	public abstract void postRealTimeJobLine(String symbol, AInterval graphInterval, ATime from);	
+	public abstract void postRealTimeJobLine(String symbol, AInterval interval, ATime from);	
 	
-	// get historical data bunch
-	public abstract ABarSeries getHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to);
+	// get historical data
+	public abstract ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to);
 	
 }

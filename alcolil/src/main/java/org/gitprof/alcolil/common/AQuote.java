@@ -126,9 +126,6 @@ public class AQuote implements CSVable {
 		fields[5] = String.valueOf(avolume);
 		fields[6] = ainterval.toString();
 		fields[7] = atime.toString();
-		
-		//CSVObject csvObject = new CSVObject(fields);
-		
 		return fields;
 	}
 	

@@ -1,5 +1,17 @@
 package org.gitprof.alcolil.marketdata;
 
-public class QuoteStreamGather {
+import org.gitprof.alcolil.common.*;
 
+public class QuoteStreamGather implements Runnable{
+
+	QuoteQueue quoteQueue;
+	
+	public QuoteStreamGather(QuoteQueue quoteQueue) {
+		this.quoteQueue = quoteQueue;
+	}
+
+	@Override
+	public void run() {
+		// TODO
+	}
 }

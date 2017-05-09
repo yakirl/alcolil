@@ -1,5 +1,7 @@
 package org.gitprof.alcolil.scanner;
 
+import java.util.List;
+
 import java.lang.Thread;
 
 import org.gitprof.alcolil.common.*;
@@ -14,12 +16,17 @@ public class BackTester {
 		
 	}
 	
-	public void backTest(AStockSeries stocks, AInterval interval, ATime from, ATime to) {
-		coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, stocks, interval, from, to);
-		scannerThread = new Thread(coreScanner);
-		scannerThread.start();
+	public void backtest(List<String> symbols, AInterval interval, ATime from, ATime to) {
+		coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, symbols, interval, from, to);
+		coreScanner.backtest();
 	}
-	
+
+	/* used only when running backtester in delayed mode for watching realtime progress
+	 * this runs backtester as a thread */
+	public void watchBacktest() {
+		
+	}
+
 	public void stop() {
 		coreScanner.stop();
 		try {

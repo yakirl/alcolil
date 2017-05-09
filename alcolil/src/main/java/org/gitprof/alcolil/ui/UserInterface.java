@@ -11,7 +11,7 @@ public class UserInterface implements Runnable {
 	}
 	
 	private void initializeAndRun() {
-		GController gcontroller = new GController();
+		final GController gcontroller = new GController();
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {

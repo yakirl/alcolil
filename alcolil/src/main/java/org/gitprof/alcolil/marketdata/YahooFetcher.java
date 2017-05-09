@@ -28,10 +28,8 @@ import org.gitprof.alcolil.core.Core;
 public class YahooFetcher extends BaseFetcher {
 
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
-	QuoteStreamScatter quoteStreamingHandler;
-	Thread quoteStreamingHandlerThread = null;
-	//private Map<Integer, ABarSeries> jobs;
-	//private Set<Integer> jobIds;
+	QuoteStreamGather quoteStreamGather;
+	Thread quoteStreamGatherThread = null;
 	
 	public YahooFetcher( ) {
 		//super(quoteQueue);
@@ -39,64 +37,62 @@ public class YahooFetcher extends BaseFetcher {
 	
 	@Override
 	public void connect() {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void disconnect() {
-		// TODO Auto-generated method stub
 		
 	}
 	
 	@Override
 	public void activateStreaming(QuoteQueue quoteQueue) {
-		quoteStreamingHandler = new QuoteStreamScatter(quoteQueue);
-		quoteStreamingHandlerThread = new Thread(quoteStreamingHandler);
-		quoteStreamingHandlerThread.start();
+		quoteStreamGather = new QuoteStreamGather(quoteQueue);
+		quoteStreamGatherThread = new Thread(quoteStreamGather);
+		quoteStreamGatherThread.start();
 	}
 
 	@Override
 	public void deactivateStreaming() {
-		quoteStreamingHandler.stop.set(true);
+		// quoteStreamGather.stop.set(true);
 		try {
-			quoteStreamingHandlerThread.join();
+			quoteStreamGatherThread.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	@Override
-	public void postRealTimeJobLine(String symbol, AInterval graphInterval, ATime from) {
+	public void postRealTimeJobLine(String symbol, AInterval AInterval, ATime from) {
 		LOG.error("Yahoo fetcher does not implement real time data!");
 	}
 	
-	public void postHistoricalDataJobLine(String symbol, AInterval graphInterval, ATime from, ATime to) {
-		ABarSeries barSeries =  getHistoricalData(symbol, graphInterval, from, null);
-		quoteStreamingHandler.addJob(barSeries);
+	public void postHistoricalDataJobLine(String symbol, AInterval AInterval, ATime from, ATime to) {
+		ABarSeries barSeries =  getHistoricalData(symbol, AInterval, from, null);
+		// quoteStreamingHandler.addJob(barSeries);
 	}
 	
 	@Override
-	public ABarSeries getHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
-		if (graphInterval == AInterval.FIVE_MIN ||
-				graphInterval == AInterval.ONE_MIN)
-			return getHistoricalIntraDay(symbol, graphInterval, from, to);
+	public ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to) {
+		if (interval == AInterval.FIVE_MIN ||
+			interval == AInterval.ONE_MIN)
+			return getHistoricalIntraDay(symbol, interval, from, to);
 		else
-			return getHistoricalAboveDaily(symbol, graphInterval, from, to);
+			return getHistoricalAboveDaily(symbol, interval, from, to);
 	}
 	
-	private ABarSeries getHistoricalIntraDay(String symbol, AInterval graphInterval, ATime from, ATime to) {
+	private ABarSeries getHistoricalIntraDay(String symbol, AInterval interval, ATime from, ATime to) {
 		return null;
 	}
 	
 	//returns daily quotes
-	private ABarSeries getHistoricalAboveDaily(String symbol, AInterval graphInterval, ATime from, ATime to) {
+	private ABarSeries getHistoricalAboveDaily(String symbol, AInterval interval, ATime from, ATime to) {
 		Stock yahooStock;
-		ABarSeries barSeries = new ABarSeries();
+		ABarSeries barSeries = new ABarSeries(interval);
 		try {
 			yahooStock = YahooFinance.get(symbol, true);
-			Interval interval = convertToYahooInterval(graphInterval);
-			List<HistoricalQuote> histQuotes = yahooStock.getHistory(interval);
+			Interval yahooInterval = convertToYahooInterval(interval);
+			List<HistoricalQuote> histQuotes = yahooStock.getHistory(yahooInterval);
 			for (HistoricalQuote yahooQuote : histQuotes) {
 				barSeries.addQuote(convertFromYahooQuote(yahooQuote));
 			}

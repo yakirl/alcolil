@@ -4,9 +4,15 @@ import java.io.IOException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.scanner.BackTestPipe;
+import org.gitprof.alcolil.marketdata.BaseFetcher;
 
 /*
  * this Class maintaining the database and keep it updated
@@ -17,59 +23,49 @@ public class HistoricalDataUpdater {
 
 	//private static String symbolFile;
 	// we use pipe and not directly marketDataFetcher
+    protected static final Logger LOG = LogManager.getLogger(HistoricalDataUpdater.class);
 	private AStockCollection stocks;
+	private DBManager dbManager;
+	private BaseFetcher fetcher;
 	//private BackTestPipe quotePipe;
 	
-	public HistoricalDataUpdater(AStockCollection stocks) {
-		this.stocks = stocks;
-		//this.quotePipe  = new BackTestPipe();
+	public HistoricalDataUpdater() {
+		this.dbManager = DBManager.getInstance();
+		this.fetcher = BaseFetcher.getDefaultFetcher();
+	}
+
+	public HistoricalDataUpdater(BaseFetcher fetcher) {
+		this.dbManager = DBManager.getInstance();
+		this.fetcher = fetcher;
 	}
 	
-	public HistoricalDataUpdater(String stocksFilename) throws IOException {
-		this.stocks = DBManager.getInstance().getStockCollection();
-		//this.quotePipe  = new BackTestPipe();
-	}
-	
-	// takes historicalData from remote - using QuotePipe
-	private ATimeSeries getRemoteHistoricalData(AStock stock) {
-		AStockCollection tmpStocks = new AStockCollection();
-		tmpStocks.add(stock);
-		ATimeSeries timeSeries = new ATimeSeries(stock.getSymbol());
-		BackTestPipe quotePipe = new BackTestPipe(tmpStocks);
-		Thread quotePipeThread = new Thread(quotePipe);
-		quotePipeThread.start();
-		AQuote quote;
-		while(true) {
-			quote = quotePipe.getNextQuote();
-			if (quote.isDead()) {
-				break;
-			}
-			timeSeries.add1minQuote(quote);
-		}
-		return timeSeries;
-	}
-	
-	// takes historicalData from DB
-	private ATimeSeries getLocalTimeSeries(String symbol) throws IOException {
-		return DBManager.getInstance().readFromQuoteDB(symbol);
-	}
-	
-	private AStockSeries getLocalStockSeries(String[] symbols) throws IOException {
-		AStockSeries stockSeries = new AStockSeries();
-		for (String symbol : symbols) {
-			stockSeries.addTimeSeries(symbol, getLocalTimeSeries(symbol));
-		}
+	private AStockSeries getRemoteHistoricalData(List<String> symbols, AInterval interval) {
+		BackTestPipe quotePipe = new BackTestPipe(symbols, interval);
+		AStockSeries stockSeries = quotePipe.getRemoteHistoricalData();
 		return stockSeries;
 	}
-	
+			
+	private AStockSeries getLocalStockSeries(List<String> symbols, AInterval interval) throws IOException {
+		return dbManager.readFromQuoteDB(symbols, interval);
+	}
 	
 	public void updateQuoteDB() throws IOException {
-		ATimeSeries remoteTimeSeries, localTimeSeries, mergedTimeSeries;
-		for (AStock stock : stocks) {
-			remoteTimeSeries = getRemoteHistoricalData(stock);
-			localTimeSeries  = getLocalTimeSeries(stock.getSymbol());
-			mergedTimeSeries = ATimeSeries.mergeTimeSeries(remoteTimeSeries, localTimeSeries);
-			DBManager.getInstance().rewriteToQuoteDB(mergedTimeSeries);
+		AStockCollection stocks = dbManager.getStockCollection();
+		updateQuoteDB(stocks.getSymbols(), AInterval.ONE_MIN);
+	}
+	
+	public void updateQuoteDB(List<String> symbols, AInterval interval) throws IOException {
+	    LOG.info("updating Quote DB");
+		ABarSeries remoteBarSeries, localBarSeries, mergedBarSeries;
+		AStockSeries remoteStockSeries = getRemoteHistoricalData(symbols, interval);
+		AStockSeries localStockSeries  = getLocalStockSeries(symbols, interval);
+		AStockSeries mergedStockSeries = new AStockSeries(interval);
+		for (String symbol : symbols) {
+			remoteBarSeries = remoteStockSeries.getBarSeries(symbol);
+			localBarSeries = localStockSeries.getBarSeries(symbol);
+			mergedBarSeries = ABarSeries.mergeBarSeries(remoteBarSeries, localBarSeries);
+			mergedStockSeries.addBarSeries(symbol, mergedBarSeries);
 		}
+		dbManager.rewriteToQuoteDB(mergedStockSeries);
 	}
 }

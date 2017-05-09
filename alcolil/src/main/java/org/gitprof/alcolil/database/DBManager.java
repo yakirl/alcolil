@@ -1,6 +1,7 @@
 package org.gitprof.alcolil.database;
 
 import java.util.Map;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.nio.file.Path;
@@ -12,32 +13,43 @@ import java.io.IOException;
 import java.io.FileReader;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.lang.reflect.*;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.global.Conf;
 
 public class DBManager {
 
+    protected static final Logger LOG = LogManager.getLogger(DBManager.class);
 	Map<DBSection, Lock> sectionLocks;
-	Path quoteDB;
-	Path tradeDB;
-	Path stockDB;
-	Path alarmDB;
 	
 	private static DBManager dbManager = null;
 	
-	
 	private DBManager() {
+		sectionLocks = new EnumMap<DBSection, Lock>(DBSection.class);
 		initSectionLocks();
 	}
 	
 	public static DBManager getInstance() {
-		if (null == dbManager) 
+		if (null == dbManager) { 
 			dbManager = new DBManager();
+			validateDBStructure();
+		}
 		return dbManager;	
+	}
+	
+	private static void validateDBStructure() {
+	    Field[] fields = Conf.class.getDeclaredFields();
+	    for (Field f : fields) {
+	        assertDirExists((f.get(new Conf())).toString());
+	    }
+	    
 	}
 	
 	private void initSectionLocks() {
@@ -81,6 +93,17 @@ public class DBManager {
 		return null;
 	}
 	
+	/*** High level operations: Collections R/W ***/
+	public AStockCollection getStockCollection() throws IOException {
+	    LOG.debug("getStockCollection");
+		AStockCollection stockCollection = new AStockCollection();
+		List<String[]> csvLines = readFromFile(Conf.stockListFile);
+		for (String[] csvLine : csvLines) {
+			stockCollection.add((AStock)(new AStock()).initFromCSV(csvLine));
+		}
+		return stockCollection;
+	}
+	
 	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException {
 		AStockSeries stockSeries = new AStockSeries(interval);
 		ATimeSeries timeSeries;
@@ -93,9 +116,23 @@ public class DBManager {
 		return stockSeries;
 	}
 	
+	private void writeToQuoteDB(AStockSeries stockSeries, boolean append) throws IOException {
+		for (String symbol : stockSeries.getSymbolList()) {
+			writeToQuoteDB(stockSeries.getBarSeries(symbol), append);
+		}
+	}
+	
+	public void rewriteToQuoteDB(AStockSeries stockSeries) throws IOException {
+		writeToQuoteDB(stockSeries, false);
+	}
+	
+	public void appendToQuoteDB(AStockSeries stockSeries) throws IOException {
+		writeToQuoteDB(stockSeries, true);
+	}
+	
 	// TODO: handle unlocking in case of excpetion
 	public ATimeSeries readFromQuoteDB(String symbol) throws IOException {
-		sectionLocks.get(quoteDB).lock();
+		sectionLocks.get(DBSection.QUOTE_DB).lock();
 		File dir = new File(Conf.quoteDB);
 		File[] directoryListing = dir.listFiles();
 		List<String[]> csvLines;
@@ -111,15 +148,15 @@ public class DBManager {
 			}
 			timeSeries.addBarSeries(interval, barSeries);
 		} 
-		sectionLocks.get(quoteDB).unlock();
+		sectionLocks.get(DBSection.QUOTE_DB).unlock();
 		return null;
 	}
 	
 	// TODO: handle unlocking in case of excpetion
-	public void writeToQuoteDB(ATimeSeries timeSeries, boolean append) throws IOException {
-		sectionLocks.get(quoteDB).lock();
+	private void writeToQuoteDB(ATimeSeries timeSeries, boolean append) throws IOException {
+		sectionLocks.get(DBSection.QUOTE_DB).lock();
 		String symbol = timeSeries.getSymbol();
-		Path dirPath = Paths.get(Conf.quoteDB + "\\" + symbol);
+		Path dirPath = Paths.get(Conf.quoteDB, symbol);
 		createDir(dirPath);
 		List<AQuote> quotes;
 		List<String[]> csvLines = new ArrayList<String[]>();
@@ -133,7 +170,7 @@ public class DBManager {
 			String pathname = getQuoteFileFullPath(symbol, interval);
 			writeToFile(pathname, csvLines, append);	
 		}
-		sectionLocks.get(quoteDB).unlock();
+		sectionLocks.get(DBSection.QUOTE_DB).unlock();
 	}
 	
 	public void rewriteToQuoteDB(ATimeSeries timeSeries) throws IOException {
@@ -144,6 +181,25 @@ public class DBManager {
 		writeToQuoteDB(timeSeries, true);
 	}
 	
+	// TODO: handle unlocking in case of excpetion
+	private void writeToQuoteDB(ABarSeries barSeries, boolean append) throws IOException {
+		sectionLocks.get(DBSection.QUOTE_DB).lock();
+		String symbol = barSeries.getSymbol();
+		AInterval interval = barSeries.getInterval();
+		Path dirPath = Paths.get(Conf.quoteDB + "\\" + symbol);
+		createDir(dirPath);
+		List<AQuote> quotes;
+		List<String[]> csvLines = new ArrayList<String[]>();
+		quotes = barSeries.getQuotes();
+		for (AQuote quote : quotes) {
+			csvLines.add(quote.convertToCSV());
+		}
+		String pathname = getQuoteFileFullPath(symbol, interval);
+		writeToFile(pathname, csvLines, append);	
+		sectionLocks.get(DBSection.QUOTE_DB).unlock();
+	}
+	
+	/*** Low level operations: Files R/W ***/
 	public void createFile(String path) {
 		
 	}
@@ -163,8 +219,12 @@ public class DBManager {
 	}
 	
 	private List<String[]> readFromFile(String pathname) throws IOException {
+	    LOG.debug("reading from file:" + pathname);
+	    assertFileExists(pathname);
 		CSVReader csvReader = new CSVReader(new FileReader(pathname));
 		List<String[]> csvLines =  csvReader.readAll();
+		assert csvLines.size() > 0 : "empty CSV file: " + pathname;
+		csvLines.remove(0); // removes csv title
 		csvReader.close();
 		return csvLines;
 		
@@ -188,13 +248,13 @@ public class DBManager {
 		return interval;
 	}
 	
-	public AStockCollection getStockCollection() throws IOException {
-		AStockCollection stockCollection = new AStockCollection();
-		List<String[]> csvLines = readFromFile(stockDB.toString());
-		for (String[] csvLine : csvLines) {
-			stockCollection.add((AStock)(new AStock()).initFromCSV(csvLine));
-		}
-		return stockCollection;
+	private static void assertFileExists(String fullpath) {
+	    File f = new File(fullpath);
+	    assert (f.exists() && !f.isDirectory()) : "no file named " + fullpath;
 	}
 	
+	private static void assertDirExists(String fullpath) {
+	    File f = new File(fullpath);
+        assert (f.exists() && f.isDirectory()) : "no directory named " + fullpath;
+    }
 }

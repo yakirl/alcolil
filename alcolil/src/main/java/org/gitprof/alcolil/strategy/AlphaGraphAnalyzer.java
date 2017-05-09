@@ -4,6 +4,7 @@ package org.gitprof.alcolil.strategy;
 import java.math.*;
 import java.lang.Math;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.ListIterator;
 import java.util.PriorityQueue;
 
@@ -55,7 +56,7 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		if ((!bwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 			return 0;
 		}
-		ListIterator<AQuote> fwdItr = null; // barSeries.listIterator(bwdItr.nextIndex()-1);
+		ListIterator<AQuote> fwdItr = (new ArrayList<AQuote>()).listIterator(); // barSeries.listIterator(bwdItr.nextIndex()-1);
 		bwdItr.next();
 		//MathContext mc = new MathContext(2);
 		int d; for (d = 0; d < D_MAX; d++) {

@@ -16,7 +16,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  *  #             or in case the fetcher stop obtaining data (e.g. market closed)
  *  #       -for backtest - if no interval is given, than the pipe will pull the maximum available data from the fetcher
  *  # note2: - realtime pipe supports only 1min quotes
- *  #        - for backtest, the user can give GraphInterval: 1min or daily. 
+ *  #        - for backtest, the user can give AInterval: 1min or daily. 
  * then the user execute the pipe as a thread.
  * after that all the user has to do is using getNextQuote() for the quote streaming. 
  *  

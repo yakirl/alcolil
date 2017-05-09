@@ -1,7 +1,8 @@
 package org.gitprof.alcolil.common;
 
 import java.util.ArrayList;
-
+import java.util.Arrays;
+import java.util.List;
 import java.util.Iterator;
 
 public class AStockCollection implements Iterable<AStock> {
@@ -12,14 +13,14 @@ public class AStockCollection implements Iterable<AStock> {
 		stocks = new ArrayList<AStock>();
 	}
 	
-	public String[] getSymbols() {
+	public List<String> getSymbols() {
 		String[] symbols = new String[stocks.size()];
 		int i = 0;
 		for (AStock stock : stocks) {
 			symbols[i] = stock.getSymbol();
 			++i;
 		}
-		return symbols;
+		return new ArrayList<String>(Arrays.asList(symbols));
 	}
 	
 	public Iterator<AStock> iterator() {

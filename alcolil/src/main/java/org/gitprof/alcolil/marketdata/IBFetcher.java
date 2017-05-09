@@ -32,35 +32,17 @@ public class IBFetcher extends BaseFetcher {
 		
 	}
 	@Override
-	public void fetchHistoricalData(String symbol, GraphInterval graphInterval, ATime from, ATime to) {
+	public void postHistoricalDataJobLine(String symbol, AInterval interval, ATime from, ATime to) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public void fetchRealTimeData(String symbol, GraphInterval graphInterval, ATime from) {
+	public void postRealTimeJobLine(String symbol, AInterval interval, ATime from) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public ABarSeries getHistoricalData(String symbol, GraphInterval graphInterval, ATime from, ATime to) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void fetchHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void fetchRealTimeData(String symbol, AInterval graphInterval, ATime from) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public ABarSeries getHistoricalData(String symbol, AInterval graphInterval, ATime from, ATime to) {
+	public ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to) {
 		// TODO Auto-generated method stub
 		return null;
 	}

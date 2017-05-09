@@ -1,16 +1,18 @@
 package org.gitprof.alcolil.scanner;
 
+import java.util.List;
+
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.marketdata.BaseFetcher;
 
 public class RealTimePipe extends BaseQuotePipe {
 
 	ATime start;
-	AStockCollection stocks;
+	List<String> symbols;
 	AInterval interval;
 	
-	public RealTimePipe(AStockCollection stocks, ATime from) {
-		this.stocks = stocks;
+	public RealTimePipe(List<String> symbols, ATime from) {
+		this.symbols = symbols;
 		start = from;
 		interval = AInterval.ONE_MIN;
 	}
@@ -19,7 +21,7 @@ public class RealTimePipe extends BaseQuotePipe {
 		BaseFetcher fetcher = BaseFetcher.getDefaultFetcher();
 		fetcher.connect();
 		fetcher.activateStreaming(quoteQueue);
-		for (String symbol : stocks.getSymbols()) {
+		for (String symbol : symbols) {
 			fetcher.postRealTimeJobLine(symbol, interval, start);
 		}
 		fetcher.deactivateStreaming();

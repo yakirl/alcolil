@@ -1,6 +1,7 @@
 package org.gitprof.alcolil.scanner;
 
 import java.util.Map;
+import java.util.List;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.scanner.BaseQuotePipe;
@@ -13,7 +14,7 @@ import org.gitprof.alcolil.strategy.BaseAnalyzer;
  */
 public class CoreScanner implements Runnable {
 
-	private AStockSeries stocks;
+	private List<String> symbols;
 	private Map<String, BaseAnalyzer> analyzers;
 	private Thread quotePipeThread;
 	private BaseQuotePipe quotePipe = null;
@@ -23,8 +24,8 @@ public class CoreScanner implements Runnable {
 	private ScannerMode mode;
 	private int WAIT_FOR_PIPE_TIMEOUT_MILLIS = 10000;
 	
-	public CoreScanner(ScannerMode mode, AStockSeries stocks, AInterval interval, ATime from, ATime to) {
-		this.stocks = stocks;
+	public CoreScanner(ScannerMode mode, List<String> symbols, AInterval interval, ATime from, ATime to) {
+		this.symbols = symbols;
 		this.interval = interval;
 		this.mode = mode;
 		this.start = from;
@@ -52,9 +53,9 @@ public class CoreScanner implements Runnable {
 	 */
 	private void setQuotePipe(ScannerMode mode, AInterval interval, ATime from, ATime to) {
 		if (ScannerMode.REALTIME == mode) {
-			quotePipe = new RealTimePipe(stocks, from);
+			quotePipe = new RealTimePipe(symbols, from);
 		} else { // BACKTEST
-			quotePipe = new BackTestPipe(BackTestPipe.PipeSource.LOCAL, stocks, interval,  from, to);
+			quotePipe = new BackTestPipe(BackTestPipe.PipeSource.LOCAL, symbols, interval,  from, to);
 		}
 		quotePipeThread = new Thread(quotePipe);
 		quotePipeThread.start(); // return immediately

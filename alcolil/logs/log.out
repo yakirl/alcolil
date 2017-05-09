@@ -1,0 +1,3 @@
+main INFO  core.Core - Core posting command
+main INFO  core.Core - Core dispatching command
+main INFO  core.Core - DO_NOTHING

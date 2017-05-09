@@ -1,27 +1,30 @@
 package org.gitprof.alcolil.core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class Executor {
 
-	   public static void main( String[] args ) {
-	        System.out.println( "Executer" );
-	        Executor executer = new Executor();
-	        try {
-	        	//System.in.read();
-	        	executer.parseArgs(args);
-	        	executer.runCore();
-	        } catch(Exception e) {
-	        	e.printStackTrace();
-	        }
-	        System.out.println( "finished" );
-	    }
-	   
-	   private void runCore() {
-		   Core core = new Core();
-		   core.runCommand(new Command("UPDATE_DB"));
-		   core.start();
-	   }
-	   
-	   private void parseArgs(String[] args) {
-		   
-	   }
+    protected static final Logger LOG = LogManager.getLogger(Executor.class);
+    
+    public static void main(String[] args) {
+        LOG.info("Executor start");
+        Executor executer = new Executor();
+        try {
+        	String[] parsedArgs = executer.parseArgs(args);
+        	executer.runCore(parsedArgs);
+        } catch(Exception e) {
+        	e.printStackTrace();
+        }
+        LOG.info( "Executor finished" );
+    }
+
+    private void runCore(String[] args) {
+	   Core core = new Core();
+	   core.start(args);
+    }
+   
+    private String[] parseArgs(String[] args) {
+    	return args;
+    }
 }
