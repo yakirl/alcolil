@@ -30,7 +30,7 @@ public class QuoteQueue {
 	
 	private synchronized AQuote quoteQueueAccess(QueueOp op, AQuote quote) {
 		if (QueueOp.PUSH == op ) {
-			push(quote);
+			quotes.add(quote);
 		} else { // POP
 			return quotes.poll();
 		}

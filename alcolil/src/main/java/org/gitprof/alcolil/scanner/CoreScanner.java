@@ -23,14 +23,9 @@ public class CoreScanner implements Runnable {
 	private ATime stop = null;
 	private ScannerMode mode;
 	private int WAIT_FOR_PIPE_TIMEOUT_MILLIS = 10000;
-	
-	public CoreScanner(ScannerMode mode, List<String> symbols, AInterval interval, ATime from, ATime to) {
-		this.symbols = symbols;
-		this.interval = interval;
-		this.mode = mode;
-		this.start = from;
-		this.stop = to;
-		initializeAnalyzers();
+		
+	public CoreScanner() {	
+        initializeAnalyzers();
 	}
 	
 	public enum ScannerMode {
@@ -66,13 +61,13 @@ public class CoreScanner implements Runnable {
 		
 	}
 	
-	public void backtest() {
+	public void backtest(List<String> symbols, AInterval interval, ATime start, ATime stop) {
 		setQuotePipe(ScannerMode.BACKTEST, interval, start, stop);
 		mainLoop();
 	}
 	
-	public void realtime() {
-		setQuotePipe(ScannerMode.REALTIME, interval, start, null);
+	public void realtime(List<String> symbols, AInterval interval) {
+		setQuotePipe(ScannerMode.REALTIME, interval, null, null);
 		mainLoop();
 	}
 	
@@ -104,9 +99,11 @@ public class CoreScanner implements Runnable {
 	@Override
 	public void run() {
 		if (ScannerMode.BACKTEST == mode) {
-			backtest();
+		    return;
+			//backtest();
 		} else { // REALTIME
-			realtime();
+		    return;
+			//realtime();
 		}
 		
 	}

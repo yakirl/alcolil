@@ -1,9 +1,13 @@
 package org.gitprof.alcolil.database;
 
 import java.util.Map;
+
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.File;
@@ -100,7 +104,9 @@ public class DBManager {
 	    lockCount--;
 	}
 	
-	/*** High level operations: Collections R/W ***/
+	/*****************
+	*** Stocks DB ****
+	******************/
 	public AStockCollection getStockCollection() throws IOException {
 	    return getStockCollection(Conf.stockListFile);
 	}
@@ -129,14 +135,25 @@ public class DBManager {
 	    writeToFile(stockListFile, csvLines, false);
 	}
 	
+	
+	/********************
+	****** Quote DB *****
+	*********************/
 	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException {
-	    lockQuoteDB();
-	    LOG.info("reading stockSeries");
+	    return null;
+	}
+	
+	public AStockSeries readFromQuoteDB(List<String> symbols) throws IOException {
+	    return null;
+	}		
+	
+	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval, ATime from, ATime to) throws IOException {
+	    lockQuoteDB();	    
 		AStockSeries stockSeries = new AStockSeries(interval);
 		ATimeSeries timeSeries;
 		ABarSeries barSeries;
 		for (String symbol : symbols) {
-			timeSeries = readFromQuoteDB(symbol);
+			timeSeries = readFromQuoteDB(symbol, interval, from, to);
 			barSeries = timeSeries.getBarSeries(interval);
 			stockSeries.addBarSeries(symbol, barSeries);
 		}
@@ -160,24 +177,30 @@ public class DBManager {
 	
 	// TODO: handle unlocking in case of excpetion
 	public ATimeSeries readFromQuoteDB(String symbol) throws IOException {
+	    return null;
+	}
+	
+	public ATimeSeries readFromQuoteDB(String symbol, AInterval interval, ATime from, ATime to) throws IOException {
 	    lockQuoteDB();
-	    LOG.info("reading timeSeries for symbol: " + symbol);
-	    String stockQuotesDir = Conf.appendToQuoteDB(symbol);
-	    assertDirExists(stockQuotesDir);
-		File dir = new File(stockQuotesDir);
-		File[] directoryListing = dir.listFiles();
+	    LOG.info(String.format("reading timeSeries: symbol=%s. interval=%s. from=%s. to=%s", 
+                               symbol, interval.toString(), from.toString(), to.toString() ));
+	    String symbolIntervalDir = getQuoteFileFullPath(symbol, interval);	    
+	    assertDirExists(symbolIntervalDir);
+	    from = from.firstDayOfWeek();
+	    to   = to.  firstDayOfWeek();
+		List<File> files = getQuotesFilesByChronoOrder(symbolIntervalDir);		
 		List<String[]> csvLines;
 		ATimeSeries timeSeries = new ATimeSeries(symbol);
-		for (File child : directoryListing) {
+		for (File child : files) {
 			//getQuoteFileFullPath(symbol, interval);
 			//String pathname = Paths.get(Conf.quoteDB, symbol, child.getName());
 		    csvLines = readFromFile(child.getPath());
-		    AInterval interval = getIntervalByFilePath(child.getPath());
-			ABarSeries barSeries = new ABarSeries(interval);
+		    AInterval _interval = getIntervalByFilePath(child.getPath());
+			ABarSeries barSeries = new ABarSeries(symbol, _interval);
 			for (String[] csvLine : csvLines) {
 				barSeries.addQuote((AQuote)((new AQuote()).initFromCSV(csvLine)));
 			}
-			timeSeries.addBarSeries(interval, barSeries);
+			timeSeries.addBarSeries(_interval, barSeries);
 		} 
 		unlockQuoteDB();
 		return timeSeries;
@@ -231,8 +254,53 @@ public class DBManager {
 		writeToFile(pathname, csvLines, append);	
 		unlockQuoteDB();
 	}
+
+	public String getQuoteFileFullPath(String symbol, AInterval interval) {
+	    return Paths.get(Conf.quoteDB, symbol, symbol + "_" + interval.toString()).toString();  
+	}
+		
+	private AInterval getIntervalByFilePath(String pathname) throws IOException {
+        AInterval interval = null;
+        if (pathname.contains(AInterval.ONE_MIN.toString())) {
+            interval = AInterval.ONE_MIN;
+        } else if (pathname.contains(AInterval.FIVE_MIN.toString())) {
+            interval = AInterval.FIVE_MIN;
+        } else if (pathname.contains(AInterval.DAILY.toString())) {
+            interval = AInterval.DAILY;
+        } else {
+            throw new IOException();
+        }
+        return interval;
+    }	
 	
-	/*** Low level operations: Files R/W ***/
+	private List<File> getQuotesFilesByChronoOrder(String symbolIntervalDir) {
+	    File dir = new File(symbolIntervalDir);
+	    File[] files = dir.listFiles();
+	    List<File> fileList = Arrays.asList(files);
+	    Collections.sort(fileList, new Comparator<File>() {
+	        public int compare(File file1, File file2) {
+	            ATime time1 = getFileTime(file1);
+	            ATime time2 = getFileTime(file2);
+	            return time1.before(time2) ? -1 :
+	                   time2.before(time1) ?  1 :
+	                   0;	            
+	        }
+	        
+	        private ATime getFileTime(File file) { 
+	            String dateString = file.getName().split(".")[0].replaceAll("_", "_");
+	            return new ATime(dateString + "00:00:00.000 +0700");
+	        }            
+	    });
+	    return fileList;
+	}
+	
+	private String timeToFilename(ATime time) {
+	    return time.getDayDateString().replace("-", "_");
+	}
+	
+	/*************************************
+	******* Low level file operations *****
+	****************************************/
 	public void createFile(String path) {
 		
 	}
@@ -257,30 +325,13 @@ public class DBManager {
 	    assertFileExists(pathname);
 		CSVReader csvReader = new CSVReader(new FileReader(pathname));
 		List<String[]> csvLines =  csvReader.readAll();
+		assert csvLines != null : "problem while reading from csv file " + pathname;
 		assert csvLines.size() > 0 : "empty CSV file: " + pathname;
 		csvLines.remove(0); // removes csv title
 		csvReader.close();
 		return csvLines;
 		
-	}
-	
-	public String getQuoteFileFullPath(String symbol, AInterval interval) {
-		return Paths.get(Conf.quoteDB, symbol, symbol + "_" + interval.toString()).toString();  
-	}
-	
-	private AInterval getIntervalByFilePath(String pathname) throws IOException {
-		AInterval interval = null;
-		if (pathname.contains(AInterval.ONE_MIN.toString())) {
-			interval = AInterval.ONE_MIN;
-		} else if (pathname.contains(AInterval.FIVE_MIN.toString())) {
-			interval = AInterval.FIVE_MIN;
-		} else if (pathname.contains(AInterval.DAILY.toString())) {
-			interval = AInterval.DAILY;
-		} else {
-			throw new IOException();
-		}
-		return interval;
-	}
+	}	
 	
 	private static void assertPathExists(String fullpath) {
         File f = new File(fullpath);

@@ -7,11 +7,15 @@ import java.util.Queue;
 import java.util.ArrayDeque;
 import java.util.Vector;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.gitprof.alcolil.marketdata.QuoteQueue;
 //import java.util.Map;
 
 public class ABarSeries implements Iterable<AQuote> {
 
+    protected static final Logger LOG = LogManager.getLogger(ABarSeries.class);
 	private String symbol;
 	private AInterval interval;
 	private List<AQuote> quotes;
@@ -27,6 +31,14 @@ public class ABarSeries implements Iterable<AQuote> {
 		localObserver = new QuoteQueue();
 	}
 
+	public ABarSeries(String symbol, AInterval interval) {
+	    this.symbol = symbol;
+        this.interval = interval;
+        quotes = new ArrayList<AQuote>();
+        observers = new Vector<QuoteQueue>();
+        localObserver = new QuoteQueue();
+    }
+	
 	public String getSymbol() {
 		return symbol;
 	}
@@ -42,6 +54,7 @@ public class ABarSeries implements Iterable<AQuote> {
 	public void addQuote(AQuote quote) {
 		assert doNotModify == false : "Error! attempt to modify BarSeries while under iteration!";
 		quotes.add(quote);
+		localObserver.push(quote);
 		if (observers.size() != 0) {
 			notifyObservers(quote);
 		}
@@ -63,8 +76,7 @@ public class ABarSeries implements Iterable<AQuote> {
 		observers.addElement(new QuoteQueue());
 	}
 	
-	void notifyObservers(AQuote quote) {
-		localObserver.push(quote);
+	void notifyObservers(AQuote quote) {		
 		for (QuoteQueue observer : observers) {
 			observer.push(quote);
 		}
@@ -93,11 +105,13 @@ public class ABarSeries implements Iterable<AQuote> {
 		//TODO: handle empty lists
 		//if (barSeries1.isEmpty())
 		//	ArrayList<AQuote> abc = (ArrayList<AQuote>) barSeries2.clone();
+	    assert barSeries1.getSymbol() == barSeries2.getSymbol() : "attempt to merge barSeries with unmatched symbols!";
+	    assert barSeries1.getInterval() == barSeries2.getInterval() : "attempt to merge barSeries with unmatched interval!";
 		ATime start1 = barSeries1.getStartTime();
 		ATime start2 = barSeries2.getStartTime();
 		ATime end1   = barSeries1.getEndTime();
 		ATime end2   = barSeries2.getEndTime();
-		ABarSeries first, second, newBarSeries = new ABarSeries(AInterval.ONE_MIN);
+		ABarSeries first, second, newBarSeries = new ABarSeries(barSeries1.getSymbol(), AInterval.ONE_MIN);
 		first  = start1.before(start2) ? barSeries1 : barSeries2;
 		second = start1.before(start2) ? barSeries2 : barSeries1;
 		
@@ -114,6 +128,7 @@ public class ABarSeries implements Iterable<AQuote> {
 			// fill hole with dead quotes
 			while (nextTime.before(startSecond)) {
 				//add dead quotes
+			    LOG.warn("found empty place while merging - inserting dead quote!");
 				newBarSeries.addQuote(new AQuote());
 				nextTime = ATime.addMinute(nextTime);
 			} 

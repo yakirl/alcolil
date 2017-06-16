@@ -36,6 +36,7 @@ public abstract class BaseQuotePipe implements Runnable {
 	}
 	
 	public BaseQuotePipe() {
+	    closePipe = new AtomicBoolean();
 		closePipe.set(false);
 		setMarketDataFetcher();
 	}

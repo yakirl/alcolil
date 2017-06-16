@@ -17,8 +17,8 @@ public class BackTester {
 	}
 	
 	public void backtest(List<String> symbols, AInterval interval, ATime from, ATime to) {
-		coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, symbols, interval, from, to);
-		coreScanner.backtest();
+		//coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, symbols, interval, from, to);
+		//coreScanner.backtest();
 	}
 
 	/* used only when running backtester in delayed mode for watching realtime progress

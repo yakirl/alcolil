@@ -1,9 +1,11 @@
 package org.gitprof.alcolil.strategy;
 
 import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.global.Conf;
 
 public class AlphaAnalyzer extends BaseAnalyzer {
 
+    
 	public AlphaAnalyzer(ATimeSeries timeSeries) {
 		initialize(timeSeries);
 	}
@@ -11,7 +13,7 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 	@Override
 	public void initialize(ATimeSeries timeSeries) {
 		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.ONE_MIN));
-		super.setGraphAnalyzer(oneMinAnalyzer);
+		// super.setGraphAnalyzer(oneMinAnalyzer);
 		//AlphaGraphAnalyzer fiveMinAnalyzer = new AlphaGraphAnalyzer();
 		//super.setGraphAnalyzer(fiveMinAnalyzer);
 	}
@@ -25,7 +27,7 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 	}
 	
 	private void updateOneMinGraph(AQuote quote) {
-		BaseGraphAnalyzer graphAnalyzer = graphs.get(AInterval.ONE_MIN);
+		//BaseGraphAnalyzer graphAnalyzer = graphs.get(AInterval.ONE_MIN);
 	}
 	
 	private void updateFiveMinGraph(AQuote quote) {
@@ -40,5 +42,9 @@ public class AlphaAnalyzer extends BaseAnalyzer {
 	
 	private void alert(AQuote quote) {
 		alertingSystem.alert(quote);
+	}
+	
+	private void loadConfigurations() {
+	    
 	}
 }

@@ -20,9 +20,13 @@ public class Conf {
 	// public static String yahooQuoteDB = Paths.get(quoteDB, "yahoo").toString(); 
 	public static String backtestConfFile = Paths.get(confsDir, "backtester.properties").toString();
 	public static String stockFilterConfFile = Paths.get(confsDir, "stockfilter.properties").toString();
+	public static String analyzerConfFile = Paths.get(confsDir, "analyzer.properties").toString();
 	
 	public static String stockListFile = Paths.get(stockDB, "stocks_list.csv").toString(); 
 	
+	public static String srcDir = Paths.get(rootDir, "src").toString();
+	public static String testDir = Paths.get(srcDir, "test").toString();
+	public static String testResourcesDir = Paths.get(testDir, "resources").toString();
 	//public static String stockFile = 
 	
 	private static String getCWD() {
@@ -32,11 +36,23 @@ public class Conf {
 	    return cwd;	    
 	}
 	
-	public static String appendToStockDB(String filename) {
-	    return Paths.get(stockDB, filename).toString();
+	public static String appendToStockDB(String filename) {	    
+	    return append(stockDB, filename);
 	}
 	
-	public static String appendToQuoteDB(String filename) {
-        return Paths.get(quoteDB, filename).toString();
+	public static String appendToQuoteDB(String filename) {        
+        return append(quoteDB, filename);
     }
+	
+	public static String appendToTestResources(String filename) {	    
+	    return append(testResourcesDir, filename);
+	}	
+	
+	public static String appendToConfsDir(String filename) {      
+        return append(confsDir, filename);
+    }   
+	
+	private static String append(String dir, String filename) {
+	    return Paths.get(dir, filename).toString();
+	}
 }

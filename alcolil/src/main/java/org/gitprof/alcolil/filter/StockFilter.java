@@ -49,9 +49,10 @@ public class StockFilter {
 	}
 	
 	private BigDecimal avgVolofLastXDays(AStock stock) throws IOException {
-		ATimeSeries timeSeries = DBManager.getInstance().readFromQuoteDB(stock.getSymbol());
-		BigDecimal avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
-		return avgVol;
+		//ATimeSeries timeSeries = DBManager.getInstance().readFromQuoteDB(stock.getSymbol());
+		//BigDecimal avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
+		//return avgVol;
+	    return null;
 	}
 	
 	private boolean isMatch(AStock stock) throws IOException{

@@ -1,12 +1,16 @@
 package org.gitprof.alcolil.scanner;
 
 import java.io.IOException;
+
 import java.util.Map;
 import java.util.List;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+// import org.jfree.util.Log;
 import org.gitprof.alcolil.marketdata.BaseFetcher;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
 //import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
@@ -21,6 +25,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  */
 public class BackTestPipe extends BaseQuotePipe {
 
+    private static final Logger LOG = LogManager.getLogger(BackTestPipe.class);
 	List<String> symbols;
 	Map<String, ATimeSeries> quotesMapping;
 	AInterval interval;
@@ -49,6 +54,7 @@ public class BackTestPipe extends BaseQuotePipe {
 	}
 	
 	public AStockSeries getRemoteHistoricalData() {
+	    LOG.info("retrieve historical data from remote");
 		fetcher.connect();
 		AStockSeries stockSeries = new AStockSeries(interval);
 		ABarSeries barSeries;
@@ -57,6 +63,7 @@ public class BackTestPipe extends BaseQuotePipe {
 			stockSeries.addBarSeries(symbol, barSeries);
 		}
 		fetcher.disconnect();
+		LOG.info("data was retrieved successfully!");
 		return stockSeries;
 	}
 	

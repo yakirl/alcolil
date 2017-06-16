@@ -38,22 +38,12 @@ public class QuoteStreamScatter implements Runnable {
 		waitMillis = 100;
 	}
 	
-	public void pushNewQuote(AQuote quote) {
-		executeJob(quote);
-	}
-	
 	private void removeEmptyJobLine(String symbol) {
 		accessJobs(symbol, false);
 	}
 	
-	// TODO: delete this method
-	public void addJobLine(String symbol) {
-		accessJobs(symbol, true);
-	}
-	
 	private void accessJobs(String symbol, boolean addRemove) {
 		jobs.removeBarSeries(symbol);
-		//TODO: add job to jobs, and initialize iterator in iterators
 	}
 	
 	private void executeJob(AQuote quote) {

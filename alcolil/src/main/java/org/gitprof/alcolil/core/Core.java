@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.gitprof.alcolil.scanner.BackTester;
+import org.gitprof.alcolil.scanner.RealTimeScanner;
 import org.gitprof.alcolil.ui.UserInterface;
 import org.gitprof.alcolil.stats.StatsCalculator;
 import org.gitprof.alcolil.scanner.ParamOptimizer;
@@ -89,6 +90,7 @@ public class Core
     			if (toClose) {
     				break;
     			}
+    			Thread.sleep(1000);
     		} catch (Exception e) {
     			e.printStackTrace();
     		}
@@ -117,6 +119,8 @@ public class Core
     
     private void realTimeScanStart() {
     	// run as thread
+        RealTimeScanner realtime = new RealTimeScanner();
+        // realtime.startRealtime();
     }
     
     private void realTimeScanStop() {
