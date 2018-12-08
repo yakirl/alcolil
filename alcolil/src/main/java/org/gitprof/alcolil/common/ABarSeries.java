@@ -11,7 +11,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.gitprof.alcolil.marketdata.QuoteQueue;
-//import java.util.Map;
+
+/*
+ *  Bar Series
+ *  this class is the basic class that models the quote series and used by most of the componenets
+ *  it holds the quotes of a stock of a specific interval, and operates as on-the-fly iteration via
+ *  one local observer and multi user-registered observers
+ *  the class operates in one of 2 modes:
+ *  1. insertion mode: 
+ *   a. addQuote() quotes are inserted one by one into a queue:
+ *   	- goes to local observer and user-registered observers
+ *      - inserted to quote list
+ *   b. nextQuote() return the oldest quote in the queue, from the local observer
+ *  2. iteration mode:
+ *   a. iterate the series from begin to end.
+ *   b. once it turns to iteration mode it becomes immutable
+ *  
+ */
 
 public class ABarSeries implements Iterable<AQuote> {
 

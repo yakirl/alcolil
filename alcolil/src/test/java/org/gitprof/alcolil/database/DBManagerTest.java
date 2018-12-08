@@ -1,8 +1,5 @@
 package org.gitprof.alcolil.database;
 
-import java.math.BigDecimal;
-
-
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -14,7 +11,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.core.Core;
 import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.global.Conf;
 import org.gitprof.alcolil.unittests.SuperTestCase;
@@ -24,7 +20,7 @@ import org.gitprof.alcolil.unittests.SuperTestCase;
  */
 public class DBManagerTest extends SuperTestCase {
 
-	protected static final Logger LOG = LogManager.getLogger(Core.class);
+	protected static final Logger LOG = LogManager.getLogger(DBManagerTest.class);
 	private DBManager dbManager;
 	private static final String STOCK_LIST_FILE_EXAMPLE = Conf.appendToStockDB("stocks_list_example.csv");
 	

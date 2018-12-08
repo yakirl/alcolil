@@ -21,7 +21,6 @@ import org.gitprof.alcolil.marketdata.BaseFetcher;
  */
 public class HistoricalDataUpdater {
 
-	//private static String symbolFile;
 	// we use pipe and not directly marketDataFetcher
     protected static final Logger LOG = LogManager.getLogger(HistoricalDataUpdater.class);
 	private AStockCollection stocks;

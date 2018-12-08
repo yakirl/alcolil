@@ -35,13 +35,13 @@ import org.gitprof.alcolil.core.Core;
 public class YahooFetcher extends BaseFetcher {
 
     private int MAXIMUM_DAYS_FOR_HISTORICAL_QUTOES = 10; // this is totally arbitrary :-\
-    private static String ONE_MIN_QUOTES_URL_PATTERN = "https://chartapi.finance.yahoo.com/instrument/1.0/TICKER/chartdata;type=quote;range=RANGE/csv";
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
 	QuoteStreamGather quoteStreamGather;
 	Thread quoteStreamGatherThread = null;
+	YahooFetcherUtils utils;
 	
-	public YahooFetcher( ) {
-
+	public YahooFetcher(YahooFetcherUtils utils) {
+		this.utils = utils;
 	}
 	
 	@Override
@@ -100,10 +100,6 @@ public class YahooFetcher extends BaseFetcher {
 		return barSeries;
 	}
 	
-	public void setOneMinQuotesURLPattern(String pattern) {
-	    ONE_MIN_QUOTES_URL_PATTERN = pattern;
-	}
-	
 	private String[] convertYahoointraDayCsvToQuoteCsv(String[] csvLine, String symbol, AInterval interval) {
 	    String[] quoteCsv = new String[8];
         quoteCsv[0] = symbol;
@@ -117,7 +113,7 @@ public class YahooFetcher extends BaseFetcher {
         return quoteCsv; 
 	}
 	
-	public ABarSeries parseQuotesFromURL(String urlStr, String symbol, AInterval interval, ATime from, ATime to) throws Exception {
+	private ABarSeries parseQuotesFromURL(String urlStr, String symbol, AInterval interval, ATime from, ATime to) throws Exception {
 	    URL url;
 	    if (urlStr.contains("http://")) {
 	        url = new URL(urlStr);
@@ -129,7 +125,7 @@ public class YahooFetcher extends BaseFetcher {
 	        to = ATime.now();
 	    }
         to   = to.roundToXMin(interval);
-	    LOG.info("Parsing quotes from url: " + urlStr + String.format(". symbol=%s. interval=%s. from=%s. to=%s.", 
+	    LOG.info("Parsing quotes from uri: " + urlStr + String.format(". symbol=%s. interval=%s. from=%s. to=%s.", 
 	                                                                  symbol, interval.toString(), from.toString(), to.toString()));	  
 	    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String line = null;        
@@ -159,18 +155,13 @@ public class YahooFetcher extends BaseFetcher {
 	    ABarSeries barSeries = null;
 	    try {
 	        long days = ATime.durationInDays(from, ATime.now()); 
-	        String urlStr = getQuotesUrl(symbol, (int)days);
+	        String urlStr = utils.getQuotesUrl(symbol, AInterval.DAILY, (int)days);
 	        barSeries = parseQuotesFromURL(urlStr, symbol ,interval, from, to);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        assert false : "Yahoo couldnt get intraday quotes";	        
 	    }	    
 		return barSeries;
-	}
-	
-	private String getQuotesUrl(String symbol, int days) {	    	    
-	    String duration = String.valueOf(days) + "d";
-	    return (ONE_MIN_QUOTES_URL_PATTERN.replaceAll("RANGE", duration)).replaceAll("TICKER", symbol);
 	}
 	
 	//returns daily quotes

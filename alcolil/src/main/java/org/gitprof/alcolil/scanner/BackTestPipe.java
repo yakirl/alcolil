@@ -10,10 +10,8 @@ import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-// import org.jfree.util.Log;
-import org.gitprof.alcolil.marketdata.BaseFetcher;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
-//import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
+
 
 /*
  * Supported interval fetching: ONE_MIN, FIVE_MIN, DAILY

@@ -33,7 +33,8 @@ public class DBManager {
     protected static final Logger LOG = LogManager.getLogger(DBManager.class);
 	Map<DBSection, Lock> sectionLocks;	
 	private static DBManager dbManager = null;
-	private static int lockCount = 0;
+	private static int lockCount = 0;  // for debug
+	
 	private DBManager() {
 		sectionLocks = new EnumMap<DBSection, Lock>(DBSection.class);
 		initSectionLocks();

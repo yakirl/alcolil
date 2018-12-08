@@ -3,14 +3,13 @@ package org.gitprof.alcolil.marketdata;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.jmock.Mockery;
-import org.jmock.Expectations;
-
-import org.junit.Test;
-
+import org.gitprof.alcolil.common.AInterval;
+import org.gitprof.alcolil.common.AStockSeries;
 import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.unittests.SuperTestCase;
-import org.gitprof.alcolil.common.*;;
+import org.jmock.Expectations;
+import org.jmock.Mockery;
+import org.junit.Test;;
 
 public class HistoricalDataUpdaterTest extends SuperTestCase {
 

@@ -17,6 +17,7 @@ import java.math.BigDecimal;
  * we assume the user adds bar in sequentially order one by one. if there are holes, will fill it with 'dead quotes'
  * in any other case - an error will raised.
  */
+
 public class ATimeSeries {
 	
 	Map<AInterval, ABarSeries> graphs;

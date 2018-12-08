@@ -46,11 +46,7 @@ public abstract class BaseQuotePipe implements Runnable {
 	}
 	
 	public abstract void run();
-	
-	public void quoteQueuePush(AQuote quote) {
-		quoteQueue.push(quote);
-	}
-	
+		
 	/*
 	 * this method is used for getting any next quote - daily/intraday, history/realtime
 	 */

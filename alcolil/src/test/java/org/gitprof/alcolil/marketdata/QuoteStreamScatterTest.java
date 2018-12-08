@@ -1,24 +1,15 @@
 package org.gitprof.alcolil.marketdata;
 
-import java.math.BigDecimal;
-
-import java.io.File;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.Thread;
-
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.core.Core;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.gitprof.alcolil.common.AInterval;
+import org.gitprof.alcolil.common.AQuote;
+import org.gitprof.alcolil.common.AStockSeries;
 import org.gitprof.alcolil.database.DBManager;
-import org.gitprof.alcolil.global.Conf;
 import org.gitprof.alcolil.unittests.SuperTestCase;
 
 /**
