@@ -39,26 +39,8 @@ import org.gitprof.alcolil.common.*;
  */
 
 
-public abstract class BaseFetcher {
-
-	public static String BASEFETCHER_DEFAULT_FETCHER = "YahooFetcher";
-	private QuoteQueue quoteQueue;
-	
-	public BaseFetcher() {
-		//this.quoteQueue = quoteQueue;
-	}
-	
-	public static BaseFetcher getDefaultFetcher() {
-		BaseFetcher fetcher;
-		String fetcherName = BASEFETCHER_DEFAULT_FETCHER;
-		if("YahooFetcher" == fetcherName) {
-			fetcher = new YahooFetcher();
-		} else {
-			fetcher = new IBFetcher();
-		}
-		return fetcher;
-	}
-	
+public interface FetcherAPI {
+		
 	public abstract void connect();
 	
 	public abstract void disconnect();
@@ -69,7 +51,6 @@ public abstract class BaseFetcher {
 	// stop the streaming thread
 	public abstract void deactivateStreaming();
 	
-	
 	public abstract void postHistoricalDataJobLine(String symbol, AInterval interval, ATime from, ATime to);
 	
 	// send to the streaming thread  a realtimeData request / job
@@ -77,5 +58,4 @@ public abstract class BaseFetcher {
 	
 	// get historical data
 	public abstract ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to);
-	
 }

@@ -19,10 +19,10 @@ import java.io.File;
 import java.net.*;
 
 import org.apache.commons.lang3.ArrayUtils;
-// import org.apache.lang.ArrayUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.gitprof.alcolil.common.*;
+import org.joda.time.LocalDate;
 
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
@@ -32,16 +32,30 @@ import yahoofinance.histquotes.Interval;
 import org.gitprof.alcolil.core.Core;
 
 
-public class YahooFetcher extends BaseFetcher {
+/*****************
+ * @author yakir
+ * 
+ *  Yahoo Fetcher - fetch market data from Yahoo servers
+ *  
+ *  we use here 2 different methods to fetch data:
+ *  for daily quotes, we use Yahoo API.
+ *  for intraday we read directly from URLs, since the API doesnt offer intraday quotes
+ *
+ */
+
+public class YahooFetcher implements FetcherAPI {
 
     private int MAXIMUM_DAYS_FOR_HISTORICAL_QUTOES = 10; // this is totally arbitrary :-\
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
 	QuoteStreamGather quoteStreamGather;
 	Thread quoteStreamGatherThread = null;
+	private QuoteQueue quoteQueue;
 	YahooFetcherUtils utils;
+	YahooFinance yahooAPI;
 	
-	public YahooFetcher(YahooFetcherUtils utils) {
-		this.utils = utils;
+	public YahooFetcher() {
+		this.utils = new YahooFetcherUtils();
+		this.yahooAPI = new YahooFinance();
 	}
 	
 	@Override
@@ -130,7 +144,7 @@ public class YahooFetcher extends BaseFetcher {
 	    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String line = null;        
         ABarSeries barSeries = new ABarSeries(symbol, interval);
-        LOG.debug(String.format("%d, %d", from.getDateTime().getMillis(), to.getDateTime().getMillis()));
+        // LOG.debug(String.format("%d, %d", from.getDateTime().getMillis(), to.getDateTime().getMillis()));
         while (true) {
             line = in.readLine();
             if (line == null)
@@ -154,8 +168,9 @@ public class YahooFetcher extends BaseFetcher {
 	private ABarSeries getHistoricalIntraDay(String symbol, AInterval interval, ATime from, ATime to) {
 	    ABarSeries barSeries = null;
 	    try {
-	        long days = ATime.durationInDays(from, ATime.now()); 
-	        String urlStr = utils.getQuotesUrl(symbol, AInterval.DAILY, (int)days);
+	    	// yahoo always returns last quotes so we ask all of them and filter only needed
+	        // long days = ATime.durationInDays(from, ATime.now()); 
+	        String urlStr = utils.getQuotesUrl(symbol, interval);
 	        barSeries = parseQuotesFromURL(urlStr, symbol ,interval, from, to);
 	    } catch (Exception e) {
 	        e.printStackTrace();
@@ -165,15 +180,17 @@ public class YahooFetcher extends BaseFetcher {
 	}
 	
 	//returns daily quotes
+	// TODO: currently range is ignored. should be best effort 
+	@SuppressWarnings("static-access")
 	private ABarSeries getHistoricalAboveDaily(String symbol, AInterval interval, ATime from, ATime to) {
 		Stock yahooStock;
-		ABarSeries barSeries = new ABarSeries(interval);
+		ABarSeries barSeries = new ABarSeries(symbol, interval);
 		try {
-			yahooStock = YahooFinance.get(symbol, true);
+			yahooStock = yahooAPI.get(symbol, false);
 			Interval yahooInterval = convertToYahooInterval(interval);
 			List<HistoricalQuote> histQuotes = yahooStock.getHistory(yahooInterval);
 			for (HistoricalQuote yahooQuote : histQuotes) {
-				barSeries.addQuote(convertFromYahooQuote(yahooQuote));
+				barSeries.addQuote(convertFromYahooQuote(yahooQuote, interval));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -181,34 +198,25 @@ public class YahooFetcher extends BaseFetcher {
 		return barSeries;
 	}
 	
-	private AQuote convertFromYahooQuote(HistoricalQuote yahooQuote) {
+	private AQuote convertFromYahooQuote(HistoricalQuote yahooQuote, AInterval interval) {
 		AQuote quote = new AQuote(yahooQuote.getSymbol(),
 				yahooQuote.getOpen(),
 				yahooQuote.getHigh(),
 				yahooQuote.getLow(),
 				yahooQuote.getClose(),
 				yahooQuote.getVolume().intValue(),
-				AInterval.DAILY, // TODO: fix this shit
+				interval,
 				convertFromYahooDate(yahooQuote.getDate()));
 		return quote;								
 	}
 	
 	private ATime convertFromYahooDate(Calendar date) {
-		return null; // TODO
-	}
-	
-	private AInterval convertFromYahooInterval(Interval yahooInterval) {
-		if (yahooInterval == Interval.DAILY) {
-			return AInterval.DAILY;
-		} 
-		return null;
+		return new ATime(LocalDate.fromCalendarFields(date).toDateTimeAtCurrentTime());
 	}
 	
 	private Interval convertToYahooInterval(AInterval interval) {
-		if (interval == AInterval.DAILY) {
-			return Interval.DAILY;
-		} 
-		return null;
+		assert interval == AInterval.DAILY : "conversion is not supported for non daily interval";
+	    return Interval.DAILY;
 	}
 	
 	/*

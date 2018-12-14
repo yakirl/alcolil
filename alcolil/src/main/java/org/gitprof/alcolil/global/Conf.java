@@ -4,7 +4,6 @@ import java.nio.file.Paths;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
-// import org.jfree.util.Log;
 
 public class Conf {
 
@@ -25,6 +24,8 @@ public class Conf {
 	public static String stockListFile = Paths.get(stockDB, "stocks_list.csv").toString(); 
 	
 	public static String srcDir = Paths.get(rootDir, "src").toString();
+	
+	// TODO: separate test conf to different module
 	public static String testDir = Paths.get(srcDir, "test").toString();
 	public static String testResourcesDir = Paths.get(testDir, "resources").toString();
 	//public static String stockFile = 
@@ -36,23 +37,23 @@ public class Conf {
 	    return cwd;	    
 	}
 	
-	public static String appendToStockDB(String filename) {	    
-	    return append(stockDB, filename);
+	public static String appendToStockDB(String... subpath) {	    
+	    return append(stockDB, subpath);
 	}
 	
-	public static String appendToQuoteDB(String filename) {        
-        return append(quoteDB, filename);
+	public static String appendToQuoteDB(String... subpath) {        
+        return append(quoteDB, subpath);
     }
 	
-	public static String appendToTestResources(String filename) {	    
-	    return append(testResourcesDir, filename);
+	public static String appendToTestResources(String... subpath) {	    
+	    return append(testResourcesDir, subpath);
 	}	
 	
-	public static String appendToConfsDir(String filename) {      
-        return append(confsDir, filename);
+	public static String appendToConfsDir(String... subpath) {      
+        return append(confsDir, subpath);
     }   
 	
-	private static String append(String dir, String filename) {
-	    return Paths.get(dir, filename).toString();
+	private static String append(String dir, String... subpath) {
+	    return Paths.get(dir, subpath).toString();
 	}
 }

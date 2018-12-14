@@ -1,3 +1,14 @@
 main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
-main DEBUG database.DBManager - getStockCollection
-main DEBUG database.DBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\stocks\stocks_list_example.csv
+main INFO  core.Core - get historical data: symbol=GOOG. interval=ONE_MIN. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:01.000 -0400
+main INFO  core.Core - Parsing quotes from uri: C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\yahooquotes\quotes_GOOG_interval_1m_range_max.txt. symbol=GOOG. interval=ONE_MIN. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:00.000 -0400.
+main DEBUG core.Core - 1493993040000
+main DEBUG core.Core - 1493993340000
+main DEBUG core.Core - 1493993640000
+main DEBUG core.Core - 1493993940000
+main DEBUG core.Core - 1493994240000
+main DEBUG core.Core - 1493994540000
+main DEBUG core.Core - 1493994840000
+main DEBUG core.Core - 1493995140000
+main DEBUG core.Core - 1493995440000
+main DEBUG core.Core - 1493995740000
+main INFO  core.Core - Historical data was retrieved successfully!

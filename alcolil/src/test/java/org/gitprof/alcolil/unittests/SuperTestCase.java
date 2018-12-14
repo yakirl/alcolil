@@ -10,8 +10,8 @@ import static org.junit.Assert.assertEquals;
 public class SuperTestCase {
             
     protected static final Logger LOG = LogManager.getLogger(SuperTestCase.class);
-    protected static final String yahooQuotesTestFile1 = Conf.appendToTestResources("yahoo_GOOG_EXAMPLE_range4d_test1.txt");
-    protected static final String yahooQuotesTestFile2 = Conf.appendToTestResources("yahoo_GOOG__EXAMPLE_range2d_test2.txt");
+    protected static final String yahooQuotesDir = "yahooquotes";
+    protected static final String yahooQuotesTestFilePattern = Conf.appendToTestResources(yahooQuotesDir, "quotes_TICKER_interval_INTERVAL_range_RANGE.txt");
     protected double EPSILON = 0.0001;
     
     public SuperTestCase() {        

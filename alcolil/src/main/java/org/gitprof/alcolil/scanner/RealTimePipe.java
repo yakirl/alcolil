@@ -3,7 +3,8 @@ package org.gitprof.alcolil.scanner;
 import java.util.List;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.marketdata.BaseFetcher;
+import org.gitprof.alcolil.marketdata.FetcherAPI;
+import org.gitprof.alcolil.marketdata.YahooFetcher;
 
 public class RealTimePipe extends BaseQuotePipe {
 
@@ -18,7 +19,7 @@ public class RealTimePipe extends BaseQuotePipe {
 	}
 	
 	private void startStreaming() {
-		BaseFetcher fetcher = BaseFetcher.getDefaultFetcher();
+		FetcherAPI fetcher = new YahooFetcher();
 		fetcher.connect();
 		fetcher.activateStreaming(quoteQueue);
 		for (String symbol : symbols) {

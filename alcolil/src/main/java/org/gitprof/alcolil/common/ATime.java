@@ -20,7 +20,6 @@ import java.util.TimeZone;
  */
 public class ATime {
 
-	//Calendar calendar;
 	private DateTime dateTime;
 	private static final String pattern = "yyyy-MM-dd HH:mm:ss.SSS Z";
 	private static final DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern).withZone(getDefaultTimeZone());

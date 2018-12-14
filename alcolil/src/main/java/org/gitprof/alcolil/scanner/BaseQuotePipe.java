@@ -3,8 +3,9 @@ package org.gitprof.alcolil.scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.gitprof.alcolil.common.AQuote;
-import org.gitprof.alcolil.marketdata.BaseFetcher;
+import org.gitprof.alcolil.marketdata.FetcherAPI;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
+import org.gitprof.alcolil.marketdata.YahooFetcher;
 
 /*
  * The quote Pipe is aim to give a clean interface for marketData receiving, taking some of the logic from the Fetchers.
@@ -27,12 +28,12 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
 
 public abstract class BaseQuotePipe implements Runnable {
 
-	BaseFetcher fetcher;
+	FetcherAPI fetcher;
 	QuoteQueue quoteQueue;
 	AtomicBoolean closePipe;
 	
 	public void setMarketDataFetcher() {
-		fetcher = BaseFetcher.getDefaultFetcher();
+		fetcher = new YahooFetcher();
 	}
 	
 	public BaseQuotePipe() {

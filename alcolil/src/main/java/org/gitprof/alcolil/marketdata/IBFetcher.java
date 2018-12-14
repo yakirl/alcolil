@@ -3,7 +3,7 @@ package org.gitprof.alcolil.marketdata;
 import org.gitprof.alcolil.common.*;
 
 
-public class IBFetcher extends BaseFetcher {
+public class IBFetcher implements FetcherAPI {
 
 	public IBFetcher() {
 		//this.quoteQueue = quoteQueue;

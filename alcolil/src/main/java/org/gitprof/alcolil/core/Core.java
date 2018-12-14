@@ -17,7 +17,7 @@ import org.gitprof.alcolil.scanner.ParamOptimizer;
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManager;
 import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
-import org.gitprof.alcolil.marketdata.BaseFetcher;
+import org.gitprof.alcolil.marketdata.FetcherAPI;
 
 
 public class Core 
