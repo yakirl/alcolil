@@ -3,11 +3,11 @@ package org.gitprof.alcolil.database;
 import java.io.IOException;
 import java.util.List;
 
-import org.gitprof.alcolil.common.AInterval;
-import org.gitprof.alcolil.common.AStockCollection;
-import org.gitprof.alcolil.common.AStockSeries;
-import org.gitprof.alcolil.common.ATime;
-import org.gitprof.alcolil.common.ATimeSeries;
+import org.gitprof.alcolil.common.Interval;
+import org.gitprof.alcolil.common.StockCollection;
+import org.gitprof.alcolil.common.StockSeries;
+import org.gitprof.alcolil.common.Time;
+import org.gitprof.alcolil.common.TimeSeries;
 
 
 /***********************
@@ -22,26 +22,20 @@ public interface DBManagerAPI {
 		
 	void createDBStructure() throws Exception;
 	
-	AStockCollection getStockCollection() throws IOException; 
+	StockCollection getStockCollection() throws IOException; 
 	
-	void setStockCollection(AStockCollection stocks) throws IOException;
+	void setStockCollection(StockCollection stocks) throws IOException;
 
-	AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException;
+	StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws IOException;
 
-	AStockSeries readFromQuoteDB(List<String> symbols) throws IOException;
+	void rewriteToQuoteDB(StockSeries stockSeries) throws IOException;
 
-	AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval, ATime from, ATime to) throws IOException;
+	void appendToQuoteDB(StockSeries stockSeries) throws IOException;
 
-	void rewriteToQuoteDB(AStockSeries stockSeries) throws IOException;
+	TimeSeries readFromQuoteDB(String symbol) throws IOException;
 
-	void appendToQuoteDB(AStockSeries stockSeries) throws IOException;
+	void rewriteToQuoteDB(TimeSeries timeSeries) throws IOException;
 
-	ATimeSeries readFromQuoteDB(String symbol) throws IOException;
-
-	ATimeSeries readFromQuoteDB(String symbol, AInterval interval, ATime from, ATime to) throws IOException;
-
-	void rewriteToQuoteDB(ATimeSeries timeSeries) throws IOException;
-
-	void appendToQuoteDB(ATimeSeries timeSeries) throws IOException;
+	void appendToQuoteDB(TimeSeries timeSeries) throws IOException;
 
 }

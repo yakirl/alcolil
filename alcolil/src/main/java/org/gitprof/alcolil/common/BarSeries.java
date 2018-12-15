@@ -14,7 +14,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
 
 /*
  *  Bar Series
- *  this class is the basic class that models the quote series and used by most of the componenets
+ *  this class is the basic class that models the quote series and used by most of the components
  *  it holds the quotes of a stock of a specific interval, and operates as on-the-fly iteration via
  *  one local observer and multi user-registered observers
  *  the class operates in one of 2 modes:
@@ -24,33 +24,33 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  *      - inserted to quote list
  *   b. nextQuote() return the oldest quote in the queue, from the local observer
  *  2. iteration mode:
- *   a. iterate the series from begin to end.
+ *   a. iterates the series from begin to end.
  *   b. once it turns to iteration mode it becomes immutable
  *  
  */
 
-public class ABarSeries implements Iterable<AQuote> {
+public class BarSeries implements Iterable<Quote> {
 
-    protected static final Logger LOG = LogManager.getLogger(ABarSeries.class);
+    protected static final Logger LOG = LogManager.getLogger(BarSeries.class);
 	private String symbol;
-	private AInterval interval;
-	private List<AQuote> quotes;
-	private Iterator<AQuote> quoteIterator;
+	private Interval interval;
+	private List<Quote> quotes;
+	private Iterator<Quote> quoteIterator;
 	private Vector<QuoteQueue> observers;
 	private QuoteQueue localObserver;
 	private boolean doNotModify = false;
 	
-	public ABarSeries(AInterval interval) {
+	public BarSeries(Interval interval) {
 		this.interval = interval;
-		quotes = new ArrayList<AQuote>();
+		quotes = new ArrayList<Quote>();
 		observers = new Vector<QuoteQueue>();
 		localObserver = new QuoteQueue();
 	}
 
-	public ABarSeries(String symbol, AInterval interval) {
+	public BarSeries(String symbol, Interval interval) {
 	    this.symbol = symbol;
         this.interval = interval;
-        quotes = new ArrayList<AQuote>();
+        quotes = new ArrayList<Quote>();
         observers = new Vector<QuoteQueue>();
         localObserver = new QuoteQueue();
     }
@@ -59,15 +59,15 @@ public class ABarSeries implements Iterable<AQuote> {
 		return symbol;
 	}
 	
-	public AInterval getInterval() {
+	public Interval getInterval() {
 		return interval;
 	}
 	
-	public List<AQuote> getQuotes() {
+	public List<Quote> getQuotes() {
 		return quotes;
 	}
 	
-	public void addQuote(AQuote quote) {
+	public void addQuote(Quote quote) {
 		assert doNotModify == false : "Error! attempt to modify BarSeries while under iteration!";
 		quotes.add(quote);
 		localObserver.push(quote);
@@ -76,7 +76,7 @@ public class ABarSeries implements Iterable<AQuote> {
 		}
 	}
 	
-	public AQuote nextQuote() {
+	public Quote nextQuote() {
 		return localObserver.pop();
 	}
 	
@@ -84,7 +84,7 @@ public class ABarSeries implements Iterable<AQuote> {
 		return quotes.size();
 	}
 	
-	public AQuote getQuote(int ix) {
+	public Quote getQuote(int ix) {
 		return quotes.get(ix);
 	}
 	
@@ -92,23 +92,23 @@ public class ABarSeries implements Iterable<AQuote> {
 		observers.addElement(new QuoteQueue());
 	}
 	
-	void notifyObservers(AQuote quote) {		
+	void notifyObservers(Quote quote) {		
 		for (QuoteQueue observer : observers) {
 			observer.push(quote);
 		}
 	}
 
 	@Override
-	public Iterator<AQuote> iterator() {
+	public Iterator<Quote> iterator() {
 		doNotModify = true;
 		return quotes.listIterator();
 	}
 	
-	public ATime getStartTime() {
+	public Time getStartTime() {
 		return quotes.get(0).time();
 	}
 	
-	public ATime getEndTime() {
+	public Time getEndTime() {
 		return quotes.get(size() - 1).time();
 	}
 	
@@ -117,39 +117,39 @@ public class ABarSeries implements Iterable<AQuote> {
 	 * Merge 2 barSeries (of the same bar interval)
 	 * if there is a hole between them - fill with dead quotes
 	 */
-	public static ABarSeries mergeBarSeries(ABarSeries barSeries1, ABarSeries barSeries2) {
+	public static BarSeries mergeBarSeries(BarSeries barSeries1, BarSeries barSeries2) {
 		//TODO: handle empty lists
 		//if (barSeries1.isEmpty())
 		//	ArrayList<AQuote> abc = (ArrayList<AQuote>) barSeries2.clone();
 	    assert barSeries1.getSymbol() == barSeries2.getSymbol() : "attempt to merge barSeries with unmatched symbols!";
 	    assert barSeries1.getInterval() == barSeries2.getInterval() : "attempt to merge barSeries with unmatched interval!";
-		ATime start1 = barSeries1.getStartTime();
-		ATime start2 = barSeries2.getStartTime();
-		ATime end1   = barSeries1.getEndTime();
-		ATime end2   = barSeries2.getEndTime();
-		ABarSeries first, second, newBarSeries = new ABarSeries(barSeries1.getSymbol(), AInterval.ONE_MIN);
+		Time start1 = barSeries1.getStartTime();
+		Time start2 = barSeries2.getStartTime();
+		Time end1   = barSeries1.getEndTime();
+		Time end2   = barSeries2.getEndTime();
+		BarSeries first, second, newBarSeries = new BarSeries(barSeries1.getSymbol(), Interval.ONE_MIN);
 		first  = start1.before(start2) ? barSeries1 : barSeries2;
 		second = start1.before(start2) ? barSeries2 : barSeries1;
 		
-		ATime startSecond = start1.before(start2) ? start2 : start1;
-		ATime endSecond   = start1.before(start2) ? end2   :   end1;
-		ATime endFirst    = start1.before(start2) ? end1   :   end2;
+		Time startSecond = start1.before(start2) ? start2 : start1;
+		Time endSecond   = start1.before(start2) ? end2   :   end1;
+		Time endFirst    = start1.before(start2) ? end1   :   end2;
 		
-		for (AQuote quote : first) {
+		for (Quote quote : first) {
 			newBarSeries.addQuote(quote);
 		}
-		ATime nextTime = ATime.addMinute(endFirst);
+		Time nextTime = Time.addMinute(endFirst);
 		// if we havent gone to the end of the secondBarSeries:
 		if (nextTime.before(endSecond)) {
 			// fill hole with dead quotes
 			while (nextTime.before(startSecond)) {
 				//add dead quotes
 			    LOG.warn("found empty place while merging - inserting dead quote!");
-				newBarSeries.addQuote(new AQuote());
-				nextTime = ATime.addMinute(nextTime);
+				newBarSeries.addQuote(new Quote());
+				nextTime = Time.addMinute(nextTime);
 			} 
 			// fill the rest with the second series
-			for (AQuote quote : second) {
+			for (Quote quote : second) {
 				newBarSeries.addQuote(quote);
 			}
 		}

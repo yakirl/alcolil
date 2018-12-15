@@ -32,17 +32,17 @@ public class IBFetcher implements FetcherAPI {
 		
 	}
 	@Override
-	public void postHistoricalDataJobLine(String symbol, AInterval interval, ATime from, ATime to) {
+	public void postHistoricalDataJobLine(String symbol, Interval interval, Time from, Time to) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public void postRealTimeJobLine(String symbol, AInterval interval, ATime from) {
+	public void postRealTimeJobLine(String symbol, Interval interval, Time from) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to) {
+	public BarSeries getHistoricalData(String symbol, Interval interval, Time from, Time to) {
 		// TODO Auto-generated method stub
 		return null;
 	}

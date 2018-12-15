@@ -15,7 +15,7 @@ public class RealTimeScanner implements Runnable {
     public RealTimeScanner() {
     }
     
-    public void startRealtime(List<String> symbols, AInterval interval, ATime from, ATime to) {
+    public void startRealtime(List<String> symbols, Interval interval, Time from, Time to) {
             //coreScanner = new CoreScanner(CoreScanner.ScannerMode.REALTIME, symbols, interval);
             //coreScanner.backtest();      
     }

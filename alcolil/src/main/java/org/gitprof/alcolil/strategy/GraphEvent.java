@@ -63,7 +63,7 @@ public class GraphEvent {
         public void functionality();
     }
     
-    public void updateQuote(AQuote quote) {
+    public void updateQuote(Quote quote) {
         function.functionality();
     }
     

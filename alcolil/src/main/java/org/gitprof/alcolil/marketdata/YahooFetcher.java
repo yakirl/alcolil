@@ -15,10 +15,8 @@ import org.apache.log4j.Logger;
 import org.gitprof.alcolil.common.*;
 import org.joda.time.LocalDate;
 
-import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.histquotes.Interval;
 
 import org.gitprof.alcolil.core.Core;
 
@@ -76,27 +74,27 @@ public class YahooFetcher implements FetcherAPI {
 	}
 	
 	@Override
-	public void postRealTimeJobLine(String symbol, AInterval AInterval, ATime from) {
+	public void postRealTimeJobLine(String symbol, Interval AInterval, Time from) {
 		assert false : "Yahoo fetcher doesnt support real-time quotes!";
 	}
 	
-	public void postHistoricalDataJobLine(String symbol, AInterval AInterval, ATime from, ATime to) {
+	public void postHistoricalDataJobLine(String symbol, Interval AInterval, Time from, Time to) {
 		assert false : "Yahoo fetcher doesnt support async fetching of historical data!";		
 	}
 	
 	@Override
-	public ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to) {
+	public BarSeries getHistoricalData(String symbol, Interval interval, Time from, Time to) {
 	    assert (interval != null) && (symbol != null) : "getHistoricalDate: got nulls parameters!";	    
 	    if (to == null)
-	        to = ATime.now();
+	        to = Time.now();
 	    if (from == null)
-            from = new ATime(to.getDateTime().minusDays(MAXIMUM_DAYS_FOR_HISTORICAL_QUTOES));
+            from = new Time(to.getDateTime().minusDays(MAXIMUM_DAYS_FOR_HISTORICAL_QUTOES));
 	    LOG.info(String.format("get historical data: symbol=%s. interval=%s. from=%s. to=%s",
 	             symbol, interval.toString(), from.toString(), to.toString()));
-		ABarSeries barSeries = null;
-	    if (interval == AInterval.ONE_MIN) {
+		BarSeries barSeries = null;
+	    if (interval == Interval.ONE_MIN) {
 			barSeries =  getHistoricalIntraDay(symbol, interval, from, to);
-		} else if (interval == AInterval.DAILY) {
+		} else if (interval == Interval.DAILY) {
 			barSeries =  getHistoricalAboveDaily(symbol, interval, from, to);
 	    } else {
 	        assert false : "Yahoo fetcher support only one min and daily historical quotes!";
@@ -105,7 +103,7 @@ public class YahooFetcher implements FetcherAPI {
 		return barSeries;
 	}
 	
-	private String[] convertYahoointraDayCsvToQuoteCsv(String[] csvLine, String symbol, AInterval interval) {
+	private String[] convertYahoointraDayCsvToQuoteCsv(String[] csvLine, String symbol, Interval interval) {
 	    String[] quoteCsv = new String[8];
         quoteCsv[0] = symbol;
         quoteCsv[1] = csvLine[4];
@@ -114,11 +112,11 @@ public class YahooFetcher implements FetcherAPI {
         quoteCsv[4] = csvLine[1];
         quoteCsv[5] = csvLine[5];
         quoteCsv[6] = interval.toString();
-        quoteCsv[7] = (new ATime(Integer.parseInt(csvLine[0]))).formattedString();
+        quoteCsv[7] = (new Time(Integer.parseInt(csvLine[0]))).formattedString();
         return quoteCsv; 
 	}
 	
-	private ABarSeries parseQuotesFromURL(String urlStr, String symbol, AInterval interval, ATime from, ATime to) throws Exception {
+	private BarSeries parseQuotesFromURL(String urlStr, String symbol, Interval interval, Time from, Time to) throws Exception {
 	    URL url;
 	    if (urlStr.contains("http://")) {
 	        url = new URL(urlStr);
@@ -127,14 +125,14 @@ public class YahooFetcher implements FetcherAPI {
 	    }
 	    from = from.roundToXMin(interval);
 	    if (to == null) {
-	        to = ATime.now();
+	        to = Time.now();
 	    }
         to   = to.roundToXMin(interval);
 	    LOG.info("Parsing quotes from uri: " + urlStr + String.format(". symbol=%s. interval=%s. from=%s. to=%s.", 
 	                                                                  symbol, interval.toString(), from.toString(), to.toString()));	  
 	    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String line = null;        
-        ABarSeries barSeries = new ABarSeries(symbol, interval);
+        BarSeries barSeries = new BarSeries(symbol, interval);
         // LOG.debug(String.format("%d, %d", from.getDateTime().getMillis(), to.getDateTime().getMillis()));
         while (true) {
             line = in.readLine();
@@ -144,7 +142,7 @@ public class YahooFetcher implements FetcherAPI {
                 continue;            
             String[] csvLine = line.split(",");
             String[] quoteCsv = convertYahoointraDayCsvToQuoteCsv(csvLine, symbol, interval);
-            AQuote quote = (AQuote)((new AQuote()).initFromCSV(quoteCsv));
+            Quote quote = (Quote)((new Quote()).initFromCSV(quoteCsv));
             quote.time(quote.time().roundToXMin(interval));
             if (quote.time().before(from))
                 continue;
@@ -156,8 +154,8 @@ public class YahooFetcher implements FetcherAPI {
         return barSeries;
     }
         
-	private ABarSeries getHistoricalIntraDay(String symbol, AInterval interval, ATime from, ATime to) {
-	    ABarSeries barSeries = null;
+	private BarSeries getHistoricalIntraDay(String symbol, Interval interval, Time from, Time to) {
+	    BarSeries barSeries = null;
 	    try {
 	    	// yahoo always returns last quotes so we ask all of them and filter only needed
 	        // long days = ATime.durationInDays(from, ATime.now()); 
@@ -173,12 +171,12 @@ public class YahooFetcher implements FetcherAPI {
 	//returns daily quotes
 	// TODO: currently range is ignored. should be best effort 
 	@SuppressWarnings("static-access")
-	private ABarSeries getHistoricalAboveDaily(String symbol, AInterval interval, ATime from, ATime to) {
-		Stock yahooStock;
-		ABarSeries barSeries = new ABarSeries(symbol, interval);
+	private BarSeries getHistoricalAboveDaily(String symbol, Interval interval, Time from, Time to) {
+		yahoofinance.Stock yahooStock;
+		BarSeries barSeries = new BarSeries(symbol, interval);
 		try {
 			yahooStock = yahooAPI.get(symbol, true);
-			Interval yahooInterval = convertToYahooInterval(interval);
+			yahoofinance.histquotes.Interval yahooInterval = convertToYahooInterval(interval);
 			List<HistoricalQuote> histQuotes = yahooStock.getHistory(yahooInterval);
 			for (HistoricalQuote yahooQuote : histQuotes) {
 				barSeries.addQuote(convertFromYahooQuote(yahooQuote, interval));
@@ -189,8 +187,8 @@ public class YahooFetcher implements FetcherAPI {
 		return barSeries;
 	}
 	
-	private AQuote convertFromYahooQuote(HistoricalQuote yahooQuote, AInterval interval) {
-		AQuote quote = new AQuote(yahooQuote.getSymbol(),
+	private Quote convertFromYahooQuote(HistoricalQuote yahooQuote, Interval interval) {
+		Quote quote = new Quote(yahooQuote.getSymbol(),
 				yahooQuote.getOpen(),
 				yahooQuote.getHigh(),
 				yahooQuote.getLow(),
@@ -201,13 +199,13 @@ public class YahooFetcher implements FetcherAPI {
 		return quote;								
 	}
 	
-	private ATime convertFromYahooDate(Calendar date) {
-		return new ATime(LocalDate.fromCalendarFields(date).toDateTimeAtCurrentTime());
+	private Time convertFromYahooDate(Calendar date) {
+		return new Time(LocalDate.fromCalendarFields(date).toDateTimeAtCurrentTime());
 	}
 	
-	private Interval convertToYahooInterval(AInterval interval) {
-		assert interval == AInterval.DAILY : "conversion is not supported for non daily interval";
-	    return Interval.DAILY;
+	private yahoofinance.histquotes.Interval convertToYahooInterval(Interval interval) {
+		assert interval == Interval.DAILY : "conversion is not supported for non daily interval";
+	    return yahoofinance.histquotes.Interval.DAILY;
 	}
 	
 	/*

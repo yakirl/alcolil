@@ -1,6 +1,6 @@
 package org.gitprof.alcolil.marketdata;
 
-import org.gitprof.alcolil.common.AInterval;
+import org.gitprof.alcolil.common.Interval;
 
 /****  Format description ***
  * 
@@ -19,7 +19,7 @@ public class YahooFetcherUtils {
 	protected String QUOTES_URL_PATTERN = "https://query1.finance.yahoo.com/v7/finance/chart/TICKER?range=RANGE&interval=INTERVAL&indicators=quote&includeTimestamps=true";
 			
 	// return URL for the given interval for max range
-	String getQuotesUrl(String symbol, AInterval interval) {
+	String getQuotesUrl(String symbol, Interval interval) {
 		String intervalUnits = null;
 		int intervalLength = 0;
 		switch (interval) {

@@ -6,41 +6,41 @@ import org.gitprof.alcolil.global.Conf;
 public class AlphaAnalyzer extends BaseAnalyzer {
 
     
-	public AlphaAnalyzer(ATimeSeries timeSeries) {
+	public AlphaAnalyzer(TimeSeries timeSeries) {
 		initialize(timeSeries);
 	}
 	
 	@Override
-	public void initialize(ATimeSeries timeSeries) {
-		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.ONE_MIN));
+	public void initialize(TimeSeries timeSeries) {
+		AlphaGraphAnalyzer oneMinAnalyzer = new AlphaGraphAnalyzer(timeSeries.getBarSeries(Interval.ONE_MIN));
 		// super.setGraphAnalyzer(oneMinAnalyzer);
 		//AlphaGraphAnalyzer fiveMinAnalyzer = new AlphaGraphAnalyzer();
 		//super.setGraphAnalyzer(fiveMinAnalyzer);
 	}
 
 	@Override
-	public void updateNextQuote(AQuote quote) {
+	public void updateNextQuote(Quote quote) {
 		super.updateNextQuote(quote);
 		updateOneMinGraph(quote);
 		updateFiveMinGraph(quote);
 		demoAnalyzing(quote);
 	}
 	
-	private void updateOneMinGraph(AQuote quote) {
+	private void updateOneMinGraph(Quote quote) {
 		//BaseGraphAnalyzer graphAnalyzer = graphs.get(AInterval.ONE_MIN);
 	}
 	
-	private void updateFiveMinGraph(AQuote quote) {
+	private void updateFiveMinGraph(Quote quote) {
 
 	}
 	
-	private void demoAnalyzing(AQuote quote) {
+	private void demoAnalyzing(Quote quote) {
 		if (50.0 < quote.high().floatValue()) {
 			alert(quote);
 		}
 	}
 	
-	private void alert(AQuote quote) {
+	private void alert(Quote quote) {
 		alertingSystem.alert(quote);
 	}
 	

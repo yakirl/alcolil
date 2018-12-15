@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 
 public class ExecutionPoint {
 
-	ATime time;
+	Time time;
 	BigDecimal price;
 	int shares;
 	ExecutionType type;

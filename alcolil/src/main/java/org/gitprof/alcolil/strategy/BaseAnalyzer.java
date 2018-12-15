@@ -14,9 +14,9 @@ public abstract class BaseAnalyzer {
 	AlertingSystem alertingSystem;
 	Vector<TriggerObserver> triggerObservers;
 	
-	public abstract void initialize(ATimeSeries timeSeries);	
+	public abstract void initialize(TimeSeries timeSeries);	
 	
-	public void updateNextQuote(AQuote quote) {
+	public void updateNextQuote(Quote quote) {
 		keeper.addQuote(quote);
 		analyze();
 	}

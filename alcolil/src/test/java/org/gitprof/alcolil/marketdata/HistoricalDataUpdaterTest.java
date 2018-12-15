@@ -3,8 +3,8 @@ package org.gitprof.alcolil.marketdata;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.gitprof.alcolil.common.AInterval;
-import org.gitprof.alcolil.common.AStockSeries;
+import org.gitprof.alcolil.common.Interval;
+import org.gitprof.alcolil.common.StockSeries;
 import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.unittests.SuperTestCase;
 import org.jmock.Expectations;

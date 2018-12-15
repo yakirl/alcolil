@@ -2,40 +2,60 @@ package org.gitprof.alcolil.marketdata;
 
 import java.lang.Thread;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.gitprof.alcolil.common.AStockSeries;
-import org.gitprof.alcolil.common.ABarSeries;
-import org.gitprof.alcolil.common.AQuote;
+import org.gitprof.alcolil.common.StockSeries;
+import org.gitprof.alcolil.common.BarSeries;
+import org.gitprof.alcolil.common.Quote;
 
-/*
- * holds list of jobs (requests lines) 
- * every iteration pick one line, and push to QuoteQueue the next quote in from line.
+/**************************
+ *   QuoteStreamScatter
+ *   
+ *   The component is used mainly for backtest.
+ *   It runs on its own thread, holds a list of barSeries and a QuoteQueue, and every iteration choose a barSeries, pop quote from it
+ *   	and publish to QuoteQueue.
+ *   
+ *   Usage:
+ * 		1. initialize with jobs, and QuoteQueue to publish
+ *      2. call startStreamingAsync()
+ *      3. listen and read from QuoteQueue
  *
- */
+ ***************************/
 
 public class QuoteStreamScatter implements Runnable {
 	
 	public AtomicBoolean stop;
 	private QuoteQueue quoteQueue;
 	// TODO: currently we access to jobs via 2 threads - need to synchronize it or use HashTable
-	private AStockSeries jobs;
-	private Map<ABarSeries, Iterator<AQuote>> iterators;
+	private StockSeries jobs;
 	private int waitMillis;
+	private Thread t;
 	
-	public QuoteStreamScatter(QuoteQueue quoteQueue, AStockSeries stockSeries) {
+	public QuoteStreamScatter(QuoteQueue quoteQueue, StockSeries stockSeries) {
 		stop = new AtomicBoolean();
-		jobs = new AStockSeries(stockSeries);
-		iterators = new HashMap<ABarSeries, Iterator<AQuote>>();
+		jobs = new StockSeries(stockSeries);
+		iterators = new HashMap<BarSeries, Iterator<Quote>>();
 		stop.set(false);
 		this.quoteQueue = quoteQueue;
 		waitMillis = 100;
+	}
+	
+	@Override
+	public void run() {
+		jobExecutionLoop();
+	}
+	
+	public void startStreamingAsync() {
+		t = new Thread(this);
+		t.start();
+	}
+	
+	public void stop() {
+		stop.set(true);
 	}
 	
 	private void removeEmptyJobLine(String symbol) {
@@ -46,19 +66,15 @@ public class QuoteStreamScatter implements Runnable {
 		jobs.removeBarSeries(symbol);
 	}
 	
-	private void executeJob(AQuote quote) {
+	private void executeJob(Quote quote) {
 		quoteQueue.push(quote);	
-	}
-	
-	public void stop() {
-		stop.set(true);
 	}
 	
 	private void jobExecutionLoop() {
 		String symbol;
-		ABarSeries barSeries;
-		AQuote nextQuote;
-		while(stop.get() || (jobs.size() != 0)) {
+		BarSeries barSeries;
+		Quote nextQuote;
+		while(!stop.get() && (jobs.size() != 0)) {
 			try {
 				Thread.sleep(waitMillis);
 			} catch (InterruptedException e) {
@@ -67,7 +83,6 @@ public class QuoteStreamScatter implements Runnable {
 			}
 			symbol = jobs.getSymbolList().get(new Random().nextInt(jobs.size()));
 			barSeries = jobs.getBarSeries(symbol);
-			// nextQuote = iterators.get(barSeries).next();
 			nextQuote = barSeries.nextQuote();
 			if (null == nextQuote) {
 				removeEmptyJobLine(symbol);
@@ -75,14 +90,5 @@ public class QuoteStreamScatter implements Runnable {
 			}
 			executeJob(nextQuote);
 		}
-	}
-
-	public void startStreaming() {
-		jobExecutionLoop();
-	}
-	
-	@Override
-	public void run() {
-		jobExecutionLoop();
 	}
 }

@@ -7,32 +7,32 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
 
-public class AStockCollection implements Iterable<AStock> {
+public class StockCollection implements Iterable<Stock> {
  
-	private Map<String, AStock> stocks;
+	private Map<String, Stock> stocks;
 	
-	public AStockCollection() {
-		stocks = new HashMap<String, AStock>();
+	public StockCollection() {
+		stocks = new HashMap<String, Stock>();
 	}
 	
 	public List<String> getSymbols() {
 	    return new ArrayList<String>(stocks.keySet());		
 	}
 	
-	public Iterator<AStock> iterator() {
+	public Iterator<Stock> iterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public AStock getStock(String symbol) throws Exception {
-	    AStock ret = stocks.get(symbol);
+	public Stock getStock(String symbol) throws Exception {
+	    Stock ret = stocks.get(symbol);
 	    if (ret == null) {
 	    	throw new Exception("symbol " + symbol + " not found");
 	    }
 	    return ret;
 	}
 	
-	public void add(AStock stock) {
+	public void add(Stock stock) {
 		stocks.put(stock.getSymbol(), stock);
 	}
 

@@ -1,33 +1,16 @@
 main INFO  database.FileSystemDBManager - Initializing FS DB Manager
-main DEBUG database.FileSystemDBManager - db conn string set to C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
+main DEBUG database.FileSystemDBManager - db conn string isnt set, using default
 main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
-main INFO  database.FileSystemDBManagerTest - setUp test
-main DEBUG database.FileSystemDBManager - creating DB structure
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\logs
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\quotes
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\trades
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stats
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
+main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
 main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (0)
-main INFO  database.FileSystemDBManager - writing timeSeries for symbol: INTC
-main DEBUG database.FileSystemDBManager - UNQUOTE_DB LOCK (1)
-main INFO  database.FileSystemDBManagerTest - tearDown test
-main INFO  database.FileSystemDBManagerTest - setUp test
-main DEBUG database.FileSystemDBManager - creating DB structure
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\logs
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\quotes
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\trades
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stats
-main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
-main INFO  database.FileSystemDBManagerTest - run testSetGetStockCollection
-main DEBUG database.FileSystemDBManager - setStockCollection
-main DEBUG database.FileSystemDBManager - getStockCollection
-main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
-main DEBUG database.FileSystemDBManager - read 4 lines from file
-main INFO  database.FileSystemDBManagerTest - tearDown test
+main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (1)
+main INFO  database.FileSystemDBManager - reading timeSeries: symbol=GOOG_EXAMPLE.
+main DEBUG database.FileSystemDBManager - reading quotes of symbol: GOOG_EXAMPLE. interval: ONE_MIN. from file C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\GOOG_EXAMPLE\ONE_MIN\1.csv
+main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\GOOG_EXAMPLE\ONE_MIN\1.csv
+main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (2)
+main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (1)
+main INFO  database.FileSystemDBManager - reading timeSeries: symbol=MSFT_EXAMPLE.
+main DEBUG database.FileSystemDBManager - reading quotes of symbol: MSFT_EXAMPLE. interval: ONE_MIN. from file C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\MSFT_EXAMPLE\ONE_MIN\1.csv
+main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\MSFT_EXAMPLE\ONE_MIN\1.csv
+main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (2)
+main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (1)

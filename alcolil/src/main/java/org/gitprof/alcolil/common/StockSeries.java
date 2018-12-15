@@ -5,30 +5,30 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AStockSeries {
+public class StockSeries {
 
-	private Map<String, ABarSeries> mapping;
-	private AInterval interval; 
+	private Map<String, BarSeries> mapping;
+	private Interval interval; 
 
-	public AInterval getInterval() {
+	public Interval getInterval() {
 		return interval;
 	}
 	
-	public AStockSeries(AInterval interval) {
+	public StockSeries(Interval interval) {
 		this.interval = interval;
-		mapping = new HashMap<String, ABarSeries>();
+		mapping = new HashMap<String, BarSeries>();
 	}
 
-	public AStockSeries(AStockSeries stockSeries) {
-		mapping = stockSeries.mapping = new HashMap<String, ABarSeries>(stockSeries.mapping);
+	public StockSeries(StockSeries stockSeries) {
+		mapping = stockSeries.mapping = new HashMap<String, BarSeries>(stockSeries.mapping);
 		interval = stockSeries.interval; // TODO: copy ctor for this
 	}
 	
-	public void addQuote(String symbol, AQuote quote) {
+	public void addQuote(String symbol, Quote quote) {
 		mapping.get(symbol).addQuote(quote);
 	}
 	
-	public void addBarSeries(String symbol, ABarSeries barSeries) {
+	public void addBarSeries(String symbol, BarSeries barSeries) {
 		mapping.put(symbol, barSeries);
 	}
 	
@@ -36,7 +36,7 @@ public class AStockSeries {
 		mapping.remove(symbol);
 	}
 	
-	public ABarSeries getBarSeries(String symbol) {
+	public BarSeries getBarSeries(String symbol) {
 		return mapping.get(symbol);	}
 	
 	public List<String> getSymbolList() {

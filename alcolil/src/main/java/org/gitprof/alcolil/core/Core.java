@@ -113,9 +113,9 @@ public class Core
      *  5. run parameter optimizer 
      ****************************/
 
-    private void backtest(ATime from, ATime to) throws IOException {
+    private void backtest(Time from, Time to) throws IOException {
     	List<String> symbols = FileSystemDBManager.getInstance().getStockCollection().getSymbols();
-    	AInterval interval = AInterval.ONE_MIN;
+    	Interval interval = Interval.ONE_MIN;
     	BackTester backTester = new BackTester();
     	backTester.backtest(symbols, interval, from, to);
     }

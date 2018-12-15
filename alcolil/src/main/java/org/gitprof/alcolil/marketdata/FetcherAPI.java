@@ -51,11 +51,11 @@ public interface FetcherAPI {
 	// stop the streaming thread
 	public abstract void deactivateStreaming();
 	
-	public abstract void postHistoricalDataJobLine(String symbol, AInterval interval, ATime from, ATime to);
+	public abstract void postHistoricalDataJobLine(String symbol, Interval interval, Time from, Time to);
 	
 	// send to the streaming thread  a realtimeData request / job
-	public abstract void postRealTimeJobLine(String symbol, AInterval interval, ATime from);	
+	public abstract void postRealTimeJobLine(String symbol, Interval interval, Time from);	
 	
 	// get historical data
-	public abstract ABarSeries getHistoricalData(String symbol, AInterval interval, ATime from, ATime to);
+	public abstract BarSeries getHistoricalData(String symbol, Interval interval, Time from, Time to);
 }

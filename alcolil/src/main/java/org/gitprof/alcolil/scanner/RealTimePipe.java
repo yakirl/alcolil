@@ -8,14 +8,14 @@ import org.gitprof.alcolil.marketdata.YahooFetcher;
 
 public class RealTimePipe extends BaseQuotePipe {
 
-	ATime start;
+	Time start;
 	List<String> symbols;
-	AInterval interval;
+	Interval interval;
 	
-	public RealTimePipe(List<String> symbols, ATime from) {
+	public RealTimePipe(List<String> symbols, Time from) {
 		this.symbols = symbols;
 		start = from;
-		interval = AInterval.ONE_MIN;
+		interval = Interval.ONE_MIN;
 	}
 	
 	private void startStreaming() {

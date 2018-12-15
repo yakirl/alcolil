@@ -44,6 +44,7 @@ public class FileSystemDBManager implements DBManagerAPI {
 	private static DBManagerAPI dbManager = null;
 	private static int lockCount = 0;  // for debug
 	protected Conf conf;
+	private String tmpQuotesSingleFile = "1.csv";
 	
 	private FileSystemDBManager() {
 		String dbConnString = System.getenv(DB_CONN_STRING_ENV);
@@ -65,6 +66,11 @@ public class FileSystemDBManager implements DBManagerAPI {
 		}
 		return dbManager;	
 	}
+	
+	
+	/*****************************  
+	 *    General DB operations
+	 *****************************/
 	
 	public void dbStructureOperation(boolean create, boolean validate) throws Exception {
 	    try {	 
@@ -130,18 +136,23 @@ public class FileSystemDBManager implements DBManagerAPI {
 	    lockCount--;
 	}
 	
+	
+	/*****************************  
+	 *    Stocks DB operations
+	 *****************************/
+	
 	/* (non-Javadoc)
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#getStockCollection()
 	 */
 	
 	@Override
-	public AStockCollection getStockCollection() throws IOException {
+	public StockCollection getStockCollection() throws IOException {
 	    LOG.debug("getStockCollection");
-		AStockCollection stockCollection = new AStockCollection();
-		List<String[]> csvLines = readFromFile(conf.stockListFile);
+		StockCollection stockCollection = new StockCollection();
+		List<String[]> csvLines = readFromFileWithHeader(conf.stockListFile);
 		LOG.debug("read " + csvLines.size() + " lines from file");
 		for (String[] csvLine : csvLines) {
-			stockCollection.add((AStock)(new AStock()).initFromCSV(csvLine));
+			stockCollection.add((new Stock()).initFromCSV(csvLine));
 		}
 		return stockCollection;
 	}
@@ -150,7 +161,7 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#setStockCollection(org.gitprof.alcolil.common.AStockCollection)
 	 */
 	@Override
-	public void setStockCollection(AStockCollection stocks) throws IOException {
+	public void setStockCollection(StockCollection stocks) throws IOException {
 	    LOG.debug("setStockCollection");
 	    List<String[]> csvLines = new ArrayList<String[]>();
 	    csvLines.add(conf.stockFileHeader);
@@ -166,33 +177,21 @@ public class FileSystemDBManager implements DBManagerAPI {
 	}
 	
 	
-	/* (non-Javadoc)
-	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List, org.gitprof.alcolil.common.AInterval)
-	 */
-	@Override
-	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException {
-	    return null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List)
-	 */
-	@Override
-	public AStockSeries readFromQuoteDB(List<String> symbols) throws IOException {
-	    return null;
-	}		
+	/*****************************  
+	 *    Quotes DB operations
+	 *****************************/
 	
 	/* (non-Javadoc)
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List, org.gitprof.alcolil.common.AInterval, org.gitprof.alcolil.common.ATime, org.gitprof.alcolil.common.ATime)
 	 */
 	@Override
-	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval, ATime from, ATime to) throws IOException {
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws IOException {
 	    lockQuoteDB();	    
-		AStockSeries stockSeries = new AStockSeries(interval);
-		ATimeSeries timeSeries;
-		ABarSeries barSeries;
+		StockSeries stockSeries = new StockSeries(interval);
+		TimeSeries timeSeries;
+		BarSeries barSeries;
 		for (String symbol : symbols) {
-			timeSeries = readFromQuoteDB(symbol, interval, from, to);
+			timeSeries = readFromQuoteDB(symbol);
 			barSeries = timeSeries.getBarSeries(interval);
 			stockSeries.addBarSeries(symbol, barSeries);
 		}
@@ -204,7 +203,7 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#rewriteToQuoteDB(org.gitprof.alcolil.common.AStockSeries)
 	 */
 	@Override
-	public void rewriteToQuoteDB(AStockSeries stockSeries) throws IOException {
+	public void rewriteToQuoteDB(StockSeries stockSeries) throws IOException {
 		writeToQuoteDB(stockSeries, false);
 	}
 	
@@ -212,73 +211,62 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#appendToQuoteDB(org.gitprof.alcolil.common.AStockSeries)
 	 */
 	@Override
-	public void appendToQuoteDB(AStockSeries stockSeries) throws IOException {
+	public void appendToQuoteDB(StockSeries stockSeries) throws IOException {
 		writeToQuoteDB(stockSeries, true);
-	}
-	
-	// TODO: handle unlocking in case of excpetion
-	/* (non-Javadoc)
-	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.lang.String)
-	 */
-	@Override
-	public ATimeSeries readFromQuoteDB(String symbol) throws IOException {
-	    return null;
 	}
 	
 	/* (non-Javadoc)
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.lang.String, org.gitprof.alcolil.common.AInterval, org.gitprof.alcolil.common.ATime, org.gitprof.alcolil.common.ATime)
 	 */
 	@Override
-	public ATimeSeries readFromQuoteDB(String symbol, AInterval interval, ATime from, ATime to) throws IOException {
+	public TimeSeries readFromQuoteDB(String symbol) throws IOException {
 	    lockQuoteDB();
-	    LOG.info(String.format("reading timeSeries: symbol=%s. interval=%s. from=%s. to=%s", 
-                               symbol, interval.toString(), from.toString(), to.toString() ));
-	    String symbolIntervalDir = getQuoteFileFullPath(symbol, interval);	    
-	    assertDirExists(symbolIntervalDir);
-	    from = from.firstDayOfWeek();
-	    to   = to.  firstDayOfWeek();
-		List<File> files = getQuotesFilesByChronoOrder(symbolIntervalDir);		
-		List<String[]> csvLines;
-		ATimeSeries timeSeries = new ATimeSeries(symbol);
-		for (File child : files) {
-			//getQuoteFileFullPath(symbol, interval);
-			//String pathname = Paths.get(Conf.quoteDB, symbol, child.getName());
-		    csvLines = readFromFile(child.getPath());
-		    AInterval _interval = getIntervalByFilePath(child.getPath());
-			ABarSeries barSeries = new ABarSeries(symbol, _interval);
-			for (String[] csvLine : csvLines) {
-				barSeries.addQuote((AQuote)((new AQuote()).initFromCSV(csvLine)));
-			}
-			timeSeries.addBarSeries(_interval, barSeries);
-		} 
+	    LOG.info(String.format("reading timeSeries: symbol=%s.", symbol));
+	    TimeSeries timeSeries = new TimeSeries(symbol);
+	    List<File> intervalDirs = getQuotesIntervalDirs(getSymbolQuotesDirFullPath(symbol));
+	    for (File intervalDir : intervalDirs) {
+	    	Interval interval = getIntervalByFilePath(intervalDir.getPath());
+	    	String symbolIntervalDir = getIntervalQuotesDirFullPath(symbol, interval);
+	    	assertDirExists(symbolIntervalDir);  	
+	    	BarSeries barSeries = readFromQuoteDB(symbol, interval);
+			timeSeries.addBarSeries(interval, barSeries);
+	    }
 		unlockQuoteDB();
 		return timeSeries;
 	}
 	
-	private void writeToQuoteDB(AStockSeries stockSeries, boolean append) throws IOException {
+	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws IOException {
+		String symbolIntervalDir = getIntervalQuotesDirFullPath(symbol, interval);
+    	List<File> files = getQuotesFilesByChronoOrder(symbolIntervalDir);
+		List<String[]> csvLines;
+		BarSeries barSeries = new BarSeries(symbol, interval);
+		for (File child : files) {
+			LOG.debug(String.format("reading quotes of symbol: %s. interval: %s. from file %s", symbol, interval, child.toString()));
+		    csvLines = readFromFile(child.getPath());
+			for (String[] csvLine : csvLines) {
+				barSeries.addQuote((new Quote()).initFromCSV(csvLine));
+			}
+		}
+		return barSeries;
+	}
+	
+	private void writeToQuoteDB(StockSeries stockSeries, boolean append) throws IOException {
 		for (String symbol : stockSeries.getSymbolList()) {
 			writeToQuoteDB(stockSeries.getBarSeries(symbol), append);
 		}
 	}
 	
 	// TODO: handle unlocking in case of exception
-	private void writeToQuoteDB(ATimeSeries timeSeries, boolean append) throws IOException {
+	private void writeToQuoteDB(TimeSeries timeSeries, boolean append) throws IOException {
 	    lockQuoteDB();
 		String symbol = timeSeries.getSymbol();
 		LOG.info("writing timeSeries for symbol: " + symbol);
 		Path dirPath = Paths.get(conf.quoteDBDir, symbol);
 		createDir(dirPath);
-		List<AQuote> quotes;
-		List<String[]> csvLines = new ArrayList<String[]>();
-		for (AInterval interval : AInterval.values()) {
-			quotes = timeSeries.getBarSeries(interval).getQuotes();
-			if (null == quotes) 
-				continue;
-			for (AQuote quote : quotes) {
-				csvLines.add(quote.convertToCSV());
-			}
-			String pathname = getQuoteFileFullPath(symbol, interval);
-			writeToFile(pathname, csvLines, append);	
+		BarSeries barSeries;
+		for (Interval interval : Interval.values()) {
+			barSeries = timeSeries.getBarSeries(interval);
+			writeToQuoteDB(barSeries, append);	
 		}
 		unlockQuoteDB();
 	}
@@ -287,7 +275,7 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#rewriteToQuoteDB(org.gitprof.alcolil.common.ATimeSeries)
 	 */
 	@Override
-	public void rewriteToQuoteDB(ATimeSeries timeSeries) throws IOException {
+	public void rewriteToQuoteDB(TimeSeries timeSeries) throws IOException {
 		writeToQuoteDB(timeSeries, false);
 	}
 	
@@ -295,69 +283,80 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#appendToQuoteDB(org.gitprof.alcolil.common.ATimeSeries)
 	 */
 	@Override
-	public void appendToQuoteDB(ATimeSeries timeSeries) throws IOException {
+	public void appendToQuoteDB(TimeSeries timeSeries) throws IOException {
 		writeToQuoteDB(timeSeries, true);
 	}
 	
 	// TODO: handle unlocking in case of exception
-	private void writeToQuoteDB(ABarSeries barSeries, boolean append) throws IOException {
+	private void writeToQuoteDB(BarSeries barSeries, boolean append) throws IOException {
 	    lockQuoteDB();	  
 		String symbol = barSeries.getSymbol();
-		LOG.info("writing timeSeries for symbol: " + symbol);
-		AInterval interval = barSeries.getInterval();
-		Path dirPath = Paths.get(conf.quoteDBDir + "\\" + symbol);
-		createDir(dirPath);
-		List<AQuote> quotes;
+		Interval interval = barSeries.getInterval();
+		List<Quote> quotes;
 		List<String[]> csvLines = new ArrayList<String[]>();
 		quotes = barSeries.getQuotes();
-		for (AQuote quote : quotes) {
+		for (Quote quote : quotes) {
 			csvLines.add(quote.convertToCSV());
 		}
-		String pathname = getQuoteFileFullPath(symbol, interval);
-		writeToFile(pathname, csvLines, append);	
+		String dirpath = getIntervalQuotesDirFullPath(symbol, interval);
+		createDir(Paths.get(dirpath));
+		Path filepath = Paths.get(dirpath, tmpQuotesSingleFile);
+		LOG.info(String.format("writing %d quotes for symbol: %s of interval %s to %s", csvLines.size(), symbol, interval.toString(), filepath.toString()));
+		writeToFile(filepath.toString(), csvLines, append);	
 		unlockQuoteDB();
 	}
 
-	private String getQuoteFileFullPath(String symbol, AInterval interval) {
-	    return Paths.get(conf.quoteDBDir, symbol, symbol + "_" + interval.toString()).toString();  
+	private String getIntervalQuotesDirFullPath(String symbol, Interval interval) {
+	    return Paths.get(getSymbolQuotesDirFullPath(symbol), interval.toString()).toString();  
 	}
 		
-	private AInterval getIntervalByFilePath(String pathname) throws IOException {
-        AInterval interval = null;
-        if (pathname.contains(AInterval.ONE_MIN.toString())) {
-            interval = AInterval.ONE_MIN;
-        } else if (pathname.contains(AInterval.FIVE_MIN.toString())) {
-            interval = AInterval.FIVE_MIN;
-        } else if (pathname.contains(AInterval.DAILY.toString())) {
-            interval = AInterval.DAILY;
+	private String getSymbolQuotesDirFullPath(String symbol) {
+	    return Paths.get(conf.quoteDBDir, symbol).toString();  
+	}
+	
+	private Interval getIntervalByFilePath(String pathname) throws IOException {
+        Interval interval = null;
+        if (pathname.contains(Interval.ONE_MIN.toString())) {
+            interval = Interval.ONE_MIN;
+        } else if (pathname.contains(Interval.FIVE_MIN.toString())) {
+            interval = Interval.FIVE_MIN;
+        } else if (pathname.contains(Interval.DAILY.toString())) {
+            interval = Interval.DAILY;
         } else {
             throw new IOException();
         }
         return interval;
     }	
 	
+	private List<File> getQuotesIntervalDirs(String symbolDir) {
+	    File dir = new File(symbolDir);
+	    File[] subdirs = dir.listFiles();
+	    List<File> subdirList = Arrays.asList(subdirs);
+	    return subdirList;
+	}
+	
 	private List<File> getQuotesFilesByChronoOrder(String symbolIntervalDir) {
 	    File dir = new File(symbolIntervalDir);
 	    File[] files = dir.listFiles();
 	    List<File> fileList = Arrays.asList(files);
-	    Collections.sort(fileList, new Comparator<File>() {
+	   /* Collections.sort(fileList, new Comparator<File>() {
 	        public int compare(File file1, File file2) {
-	            ATime time1 = getFileTime(file1);
-	            ATime time2 = getFileTime(file2);
+	            Time time1 = getFileTime(file1);
+	            Time time2 = getFileTime(file2);
 	            return time1.before(time2) ? -1 :
 	                   time2.before(time1) ?  1 :
 	                   0;	            
 	        }
 	        
-	        private ATime getFileTime(File file) { 
+	        private Time getFileTime(File file) { 
 	            String dateString = file.getName().split(".")[0].replaceAll("_", "_");
-	            return new ATime(dateString + "00:00:00.000 +0700");
+	            return new Time(dateString + "00:00:00.000 +0700");
 	        }            
-	    });
+	    });*/
 	    return fileList;
 	}
 	
-	private String timeToFilename(ATime time) {
+	private String timeToFilename(Time time) {
 	    return time.getDayDateString().replace("-", "_");
 	}
 	
@@ -365,6 +364,8 @@ public class FileSystemDBManager implements DBManagerAPI {
 	/*************************************
 	******* Low level file operations *****
 	****************************************/
+	
+	
 	private enum DirOp {
 		CREATE, DELETE
 	}
@@ -385,19 +386,31 @@ public class FileSystemDBManager implements DBManagerAPI {
 	
 	private void writeToFile(String pathname, List<String[]> lines, boolean append) throws IOException {
 	    assertDirExists(Paths.get(pathname).getParent().toString());
+	    for (String[] line : lines)
+	    	for (String word : line)
+	    		LOG.debug("DEBUGGGG: " + word);	
+	    
 		CSVWriter csvWriter = new CSVWriter(new FileWriter(pathname, append));
 		csvWriter.writeAll(lines);
 		csvWriter.close();
 	}
 	
+	private List<String[]> readFromFileWithHeader(String pathname) throws IOException {
+		return readFromFile(pathname, true);
+	}
+	
 	private List<String[]> readFromFile(String pathname) throws IOException {
+		return readFromFile(pathname, false);
+	}
+	
+	private List<String[]> readFromFile(String pathname, boolean omitHeader) throws IOException {
 	    LOG.debug("reading from file:" + pathname);
 	    assertFileExists(pathname);
 		CSVReader csvReader = new CSVReader(new FileReader(pathname));
 		List<String[]> csvLines =  csvReader.readAll();
 		assert csvLines != null : "problem while reading from csv file " + pathname;
-		assert csvLines.size() > 0 : "empty CSV file: " + pathname;
-		csvLines.remove(0); // removes csv title
+		if (omitHeader)
+			csvLines.remove(0);
 		csvReader.close();
 		return csvLines;
 		

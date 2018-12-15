@@ -16,7 +16,7 @@ public class BackTester {
 		
 	}
 	
-	public void backtest(List<String> symbols, AInterval interval, ATime from, ATime to) {
+	public void backtest(List<String> symbols, Interval interval, Time from, Time to) {
 		//coreScanner = new CoreScanner(CoreScanner.ScannerMode.BACKTEST, symbols, interval, from, to);
 		//coreScanner.backtest();
 	}

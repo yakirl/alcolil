@@ -2,7 +2,7 @@ package org.gitprof.alcolil.scanner;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.gitprof.alcolil.common.AQuote;
+import org.gitprof.alcolil.common.Quote;
 import org.gitprof.alcolil.marketdata.FetcherAPI;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
 import org.gitprof.alcolil.marketdata.YahooFetcher;
@@ -51,8 +51,8 @@ public abstract class BaseQuotePipe implements Runnable {
 	/*
 	 * this method is used for getting any next quote - daily/intraday, history/realtime
 	 */
-	public AQuote getNextQuote() {
-		AQuote nextQuote = quoteQueue.pop();
+	public Quote getNextQuote() {
+		Quote nextQuote = quoteQueue.pop();
 		return nextQuote;
 	}
 }

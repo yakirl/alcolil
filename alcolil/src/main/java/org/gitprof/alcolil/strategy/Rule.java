@@ -10,7 +10,7 @@ public class Rule {
     private Vector<GraphEvent> events;
     int expectedEventIX;
     private Vector<HashSet<GraphEvent>> resetEvents;
-    private AQuote lastQuote;
+    private Quote lastQuote;
     
     public Rule(RuleFactory.RuleType ruleType) {
         expectedEventIX = 0;
@@ -27,7 +27,7 @@ public class Rule {
         
     }
     
-    public void updateRule(AQuote quote) {
+    public void updateRule(Quote quote) {
         lastQuote = quote;
         assert expectedEventIX < events.size() : "continue checking rule after bingo!";
         if (expectedEventIX > 0) {

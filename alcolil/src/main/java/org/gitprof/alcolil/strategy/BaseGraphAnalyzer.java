@@ -4,9 +4,9 @@ import org.gitprof.alcolil.common.*;
 
 public abstract class BaseGraphAnalyzer {
 
-	AInterval barInterval;
+	Interval barInterval;
 	
-	public AInterval getInterval() {
+	public Interval getInterval() {
 		return barInterval;
 	}
 }

@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 import org.gitprof.alcolil.database.CSVable;;
 
-public class AStock implements CSVable {
+public class Stock implements CSVable {
 	private String symbol;
 	private String sector;
 	private BigDecimal marketCap;
@@ -39,7 +39,7 @@ public class AStock implements CSVable {
 	}
 
 	@Override
-	public CSVable initFromCSV(String[] csvs) {
+	public Stock initFromCSV(String[] csvs) {
 		symbol = csvs[0];
 		sector = csvs[1];
 		marketCap = new BigDecimal(csvs[2]);

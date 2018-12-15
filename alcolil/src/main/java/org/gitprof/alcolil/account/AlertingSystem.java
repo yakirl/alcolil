@@ -10,7 +10,7 @@ public class AlertingSystem {
 		// write to file
 	}
 	
-	public void alert(AQuote quote) {
+	public void alert(Quote quote) {
 		Alert alert = new Alert();
 	}
 	

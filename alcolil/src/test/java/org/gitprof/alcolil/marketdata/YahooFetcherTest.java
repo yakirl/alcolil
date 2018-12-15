@@ -6,9 +6,9 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import org.gitprof.alcolil.common.ABarSeries;
-import org.gitprof.alcolil.common.AInterval;
-import org.gitprof.alcolil.common.ATime;
+import org.gitprof.alcolil.common.BarSeries;
+import org.gitprof.alcolil.common.Interval;
+import org.gitprof.alcolil.common.Time;
 
 import org.gitprof.alcolil.unittests.SuperTestCase;
 import org.junit.Test;
@@ -38,11 +38,11 @@ public class YahooFetcherTest extends SuperTestCase {
         YahooFetcher fetcher = new YahooFetcher();    
         fetcher.utils.QUOTES_URL_PATTERN = yahooQuotesTestFilePattern;
         /* should be 10 quotes between them (inclusive)*/
-        ATime from = new ATime(1493993040L);
-        ATime to = new ATime(1493995741L);         
-        ABarSeries barSeries = fetcher.getHistoricalData("GOOG", AInterval.ONE_MIN, from, to);
+        Time from = new Time(1493993040L);
+        Time to = new Time(1493995741L);         
+        BarSeries barSeries = fetcher.getHistoricalData("GOOG", Interval.ONE_MIN, from, to);
         assertEquals("GOOG", barSeries.getSymbol());
-        assertEquals(AInterval.ONE_MIN, barSeries.getInterval());
+        assertEquals(Interval.ONE_MIN, barSeries.getInterval());
         assertEquals(10, barSeries.size());
         double eps = 0.0001;
         assertEquals(930.7500, barSeries.getQuote(1).high().doubleValue(), eps);
@@ -70,11 +70,11 @@ public class YahooFetcherTest extends SuperTestCase {
         PowerMockito.mockStatic(YahooFinance.class);
         BDDMockito.given(YahooFinance.get("MSFT", true)).willReturn(stock);
         
-        ATime from = new ATime(1493993040L);
-        ATime to = new ATime(1493995741L);   
-        ABarSeries barSeries = fetcher.getHistoricalData("MSFT", AInterval.DAILY, from, to);
+        Time from = new Time(1493993040L);
+        Time to = new Time(1493995741L);   
+        BarSeries barSeries = fetcher.getHistoricalData("MSFT", Interval.DAILY, from, to);
         assertEquals("MSFT", barSeries.getSymbol());
-        assertEquals(AInterval.DAILY, barSeries.getInterval());
+        assertEquals(Interval.DAILY, barSeries.getInterval());
         assertEquals(5, barSeries.size());
         
         PowerMockito.verifyStatic(YahooFinance.class);

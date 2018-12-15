@@ -26,10 +26,10 @@ public class BackTestPipe extends BaseQuotePipe {
 
     private static final Logger LOG = LogManager.getLogger(BackTestPipe.class);
 	List<String> symbols;
-	Map<String, ATimeSeries> quotesMapping;
-	AInterval interval;
-	ATime start = null;
-	ATime stop = null;
+	Map<String, TimeSeries> quotesMapping;
+	Interval interval;
+	Time start = null;
+	Time stop = null;
 	DBManagerAPI dbManager;
 	PipeSource pipeSource;
 	
@@ -37,7 +37,7 @@ public class BackTestPipe extends BaseQuotePipe {
 		LOCAL, REMOTE
 	}
 	
-	public BackTestPipe(PipeSource pipeSource, List<String> sybmols, AInterval interval, ATime from, ATime to) {
+	public BackTestPipe(PipeSource pipeSource, List<String> sybmols, Interval interval, Time from, Time to) {
 		this.symbols = symbols;
 		this.interval = interval;
 		start = from;
@@ -46,17 +46,17 @@ public class BackTestPipe extends BaseQuotePipe {
 		this.pipeSource = pipeSource;
 	}
 
-	public BackTestPipe(List<String> symbols, AInterval interval) {
+	public BackTestPipe(List<String> symbols, Interval interval) {
 		this.symbols = symbols;
 		this.interval = interval;
 		dbManager = FileSystemDBManager.getInstance();
 	}
 	
-	public AStockSeries getRemoteHistoricalData() {
+	public StockSeries getRemoteHistoricalData() {
 	    LOG.info("retrieve historical data from remote");
 		fetcher.connect();
-		AStockSeries stockSeries = new AStockSeries(interval);
-		ABarSeries barSeries;
+		StockSeries stockSeries = new StockSeries(interval);
+		BarSeries barSeries;
 		for (String symbol : symbols) {
 			barSeries = fetcher.getHistoricalData(symbol, interval, start, stop);
 			stockSeries.addBarSeries(symbol, barSeries);
@@ -68,10 +68,10 @@ public class BackTestPipe extends BaseQuotePipe {
 	
 	private void startStreamingFromLocalDB() {
 		try {
-			AStockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
+			StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
 			quoteQueue = new QuoteQueue();
 			QuoteStreamScatter quoteStreamScatter = new QuoteStreamScatter(quoteQueue, stockSeries);
-			quoteStreamScatter.startStreaming();
+			quoteStreamScatter.startStreamingAsync();
 		} catch (IOException e) {
 			e.printStackTrace();
 			closePipe();

@@ -1,6 +1,6 @@
 package org.gitprof.alcolil.common;
 
 
-public enum AInterval {
+public enum Interval {
 		ONE_MIN, FIVE_MIN,  DAILY
 }

@@ -14,25 +14,25 @@ import org.gitprof.alcolil.common.*;
 
 public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 
-	private ABarSeries barSeries;
+	private BarSeries barSeries;
 	
-	public void updateNextQuote(AQuote quote) {
+	public void updateNextQuote(Quote quote) {
 		//TODO
 	}
 	
-	public AlphaGraphAnalyzer(ABarSeries barSeries) {
+	public AlphaGraphAnalyzer(BarSeries barSeries) {
 		this.barSeries = barSeries;
 	}
 	
-	public BigDecimal avgVolofXDays(int numDays, ATime endTime) {
+	public BigDecimal avgVolofXDays(int numDays, Time endTime) {
 		return new BigDecimal(0);
 	}
 	
 	public class RankedQuote implements Comparable<RankedQuote> {
-		public AQuote quote;
+		public Quote quote;
 		public double rank;
 		
-		public RankedQuote(AQuote quote, double rank) {
+		public RankedQuote(Quote quote, double rank) {
 			this.quote = quote;
 			this.rank = rank;
 		}
@@ -49,14 +49,14 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		}
 	}
 	
-	private double calcSupportRank(ListIterator<AQuote> bwdItr, AQuote currQuote) {
+	private double calcSupportRank(ListIterator<Quote> bwdItr, Quote currQuote) {
 		int D_MAX = 8;
 		double rank = 0;
 		//boolean isSupport = false;
 		if ((!bwdItr.hasNext()) || (!bwdItr.hasPrevious())) {
 			return 0;
 		}
-		ListIterator<AQuote> fwdItr = (new ArrayList<AQuote>()).listIterator(); // barSeries.listIterator(bwdItr.nextIndex()-1);
+		ListIterator<Quote> fwdItr = (new ArrayList<Quote>()).listIterator(); // barSeries.listIterator(bwdItr.nextIndex()-1);
 		bwdItr.next();
 		//MathContext mc = new MathContext(2);
 		int d; for (d = 0; d < D_MAX; d++) {
@@ -86,7 +86,7 @@ public class AlphaGraphAnalyzer extends BaseGraphAnalyzer {
 		}
 		System.out.println("*******");
 		for (ix = 0; ix < 5; ix++) {
-			AQuote quote = supports.poll().quote;
+			Quote quote = supports.poll().quote;
 			System.out.println(quote.low());
 			System.out.println(quote.time());
 			System.out.println(supports.poll().rank);

@@ -18,31 +18,31 @@ import java.util.TimeZone;
  * 		ZZ - timezone offset
  * 3. NYSE time zone 
  */
-public class ATime {
+public class Time {
 
 	private DateTime dateTime;
 	private static final String pattern = "yyyy-MM-dd HH:mm:ss.SSS Z";
 	private static final DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern).withZone(getDefaultTimeZone());
 	private static final String NEW_YORK_TIME_ZONE = "America/New_York";
 	
-	public ATime(String timeStr) {	
+	public Time(String timeStr) {	
 		dateTime = DateTime.parse(timeStr, formatter);
 	}
 	
 	/* seconds from the the epoch time: jan 1, 1970, 00:00:00 GMT */
-	public ATime(long unixTimestamp) {	       	    
+	public Time(long unixTimestamp) {	       	    
         dateTime = new DateTime(unixTimestamp * 1000L);      
 	}
 	
-	public ATime(DateTime dateTime) {
+	public Time(DateTime dateTime) {
 		this.dateTime = dateTime;
 	}	
 	
 	public boolean equals(Object obj) {
 	    if (obj == null) return false;
 	    if (obj == this) return true;
-	    if (!(obj instanceof ATime))return false;
-	    ATime time = (ATime)obj;
+	    if (!(obj instanceof Time))return false;
+	    Time time = (Time)obj;
 	    System.out.println(String.format("%s. %s", time.getDateTime().toString(), dateTime.toString()));
 	    return dateTime.isEqual(time.getDateTime());
 	}
@@ -55,7 +55,7 @@ public class ATime {
 	    return DateTimeZone.getProvider().getZone(NEW_YORK_TIME_ZONE);
 	}
 	
-	public boolean before(ATime time) {
+	public boolean before(Time time) {
 		return dateTime.isBefore(time.dateTime);
 	}
 	
@@ -63,66 +63,66 @@ public class ATime {
 	public long getSeconds() {
 	    return dateTime.getMillis() / 1000L;
 	}
-	public static ATime addMinute(ATime time) {
+	public static Time addMinute(Time time) {
 		return addXMinutes(time, 1);
 	}
 	
-	public static ATime addXMinutes(ATime time, int mins) {
-		return new ATime(time.dateTime.withFieldAdded(DurationFieldType.minutes(), mins));
+	public static Time addXMinutes(Time time, int mins) {
+		return new Time(time.dateTime.withFieldAdded(DurationFieldType.minutes(), mins));
 	}
 	
-	public ATime minusMinutes(int mins) {
-	    return new ATime(dateTime.minusMinutes(mins));
+	public Time minusMinutes(int mins) {
+	    return new Time(dateTime.minusMinutes(mins));
 	}
 	
-	public ATime addXWeeks(int weeks) {
-	    return new ATime(dateTime.plusWeeks(weeks));
+	public Time addXWeeks(int weeks) {
+	    return new Time(dateTime.plusWeeks(weeks));
 	}
 	
 	public String getDayDateString() {
 	    return null;
 	}
 	
-	public ATime firstDayOfWeek() {
-	    return new ATime(dateTime.dayOfWeek().getMinimumValue());
+	public Time firstDayOfWeek() {
+	    return new Time(dateTime.dayOfWeek().getMinimumValue());
 	}
 	
-	public static ATime now() {
-	    return new ATime(DateTime.now());
+	public static Time now() {
+	    return new Time(DateTime.now());
 	}
 	
-	public static long durationInSeconds(ATime from, ATime to) {
+	public static long durationInSeconds(Time from, Time to) {
         return getDuration(from, to).getStandardSeconds();     
     }
 	
-	public static long durationInMinutes(ATime from, ATime to) {
+	public static long durationInMinutes(Time from, Time to) {
         return getDuration(from, to).getStandardMinutes();     
     }
 	
-	public static long durationInHours(ATime from, ATime to) {
+	public static long durationInHours(Time from, Time to) {
         return getDuration(from, to).getStandardHours();     
     }
 	
-	public static long durationInDays(ATime from, ATime to) {
+	public static long durationInDays(Time from, Time to) {
 	    return getDuration(from, to).getStandardDays();	    
 	}
 	
-	private static Duration getDuration(ATime from, ATime to) {
+	private static Duration getDuration(Time from, Time to) {
 	    return new Duration(from.dateTime, to.dateTime);
 	}
 	
-	public ATime roundToXMin(AInterval interval) {
+	public Time roundToXMin(Interval interval) {
 	    int minutes = 0;
-	    if (interval == AInterval.ONE_MIN)
+	    if (interval == Interval.ONE_MIN)
 	        minutes = 1;
-	    else if (interval == AInterval.FIVE_MIN)
+	    else if (interval == Interval.FIVE_MIN)
 	        minutes = 5;
 	    else
 	        assert false : "currently support 5 min or 1 min round";
 	    return roundToXMin(minutes);
 	}
 	
-	private ATime roundToXMin(int minutes) {	    
+	private Time roundToXMin(int minutes) {	    
         if (minutes < 1 || 60 % minutes != 0) {
             throw new IllegalArgumentException("minutes must be a factor of 60");
         }
@@ -131,9 +131,9 @@ public class ATime {
         final int roundedMinutes = ((int)Math.round(
             millisSinceHour / 60000.0 / minutes)) * minutes;
         if (((millisSinceHour * 1000) - roundedMinutes) < ((float)minutes / 2.0)) {
-            return new ATime(hour.minusMinutes(roundedMinutes));
+            return new Time(hour.minusMinutes(roundedMinutes));
         } else {
-            return new ATime(hour.plusMinutes(roundedMinutes));
+            return new Time(hour.plusMinutes(roundedMinutes));
         }
     }
 	

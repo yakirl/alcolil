@@ -14,7 +14,7 @@ public class AOrder implements CSVable {
 	ExecutionPoint takeProfit2;
 	ExecutionPoint stopLoss;
 	
-	AQuote trigerringQuote;
+	Quote trigerringQuote;
 	String description;
 	
 	public AOrder(String symbol, ExecutionPoint entrance, ExecutionPoint takeProfit1, ExecutionPoint takeProfit2, ExecutionPoint stopLoss) {

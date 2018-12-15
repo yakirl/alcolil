@@ -16,23 +16,23 @@ public class BarSeriesTest extends SuperTestCase {
     @Test
     public void testMergeBarSeries() {
         String symbol = "EXAMPLE";
-        ABarSeries barSeries1 = new ABarSeries(symbol, AInterval.ONE_MIN);
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407360)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407420)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407480)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407540)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407600)));        
-        ABarSeries barSeries2 = new ABarSeries(symbol, AInterval.ONE_MIN);
-        barSeries2.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407660)));
-        barSeries2.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407720)));
-        barSeries2.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407780)));        
-        ABarSeries mergedBarSeries = ABarSeries.mergeBarSeries(barSeries1, barSeries2);
-        assertEquals(AInterval.ONE_MIN, mergedBarSeries.getInterval());
+        BarSeries barSeries1 = new BarSeries(symbol, Interval.ONE_MIN);
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407360)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407420)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407480)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407540)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407600)));        
+        BarSeries barSeries2 = new BarSeries(symbol, Interval.ONE_MIN);
+        barSeries2.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407660)));
+        barSeries2.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407720)));
+        barSeries2.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407780)));        
+        BarSeries mergedBarSeries = BarSeries.mergeBarSeries(barSeries1, barSeries2);
+        assertEquals(Interval.ONE_MIN, mergedBarSeries.getInterval());
         assertEquals("EXAMPLE", mergedBarSeries.getSymbol());
         assertEquals(barSeries1.size() + barSeries2.size(), mergedBarSeries.size());
         assertEquals(barSeries1.getQuote(1).time(), mergedBarSeries.getQuote(1).time());
         assertEquals(barSeries2.getQuote(0).time(), mergedBarSeries.getQuote(5).time());
-        mergedBarSeries = ABarSeries.mergeBarSeries(barSeries2, barSeries1);
+        mergedBarSeries = BarSeries.mergeBarSeries(barSeries2, barSeries1);
         assertEquals(barSeries1.size() + barSeries2.size(), mergedBarSeries.size());
         assertEquals(barSeries1.getQuote(1).time(), mergedBarSeries.getQuote(1).time());
         assertEquals(barSeries2.getQuote(0).time(), mergedBarSeries.getQuote(5).time());             
@@ -41,22 +41,22 @@ public class BarSeriesTest extends SuperTestCase {
     @Test
     public void testBarSeriesIteration() {
         String symbol = "EXAMPLE";
-        ABarSeries barSeries1 = new ABarSeries(symbol, AInterval.ONE_MIN);
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407360L)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407420L)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407480L)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407540L)));
-        barSeries1.addQuote(new AQuote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, AInterval.ONE_MIN, new ATime(7407600L)));
+        BarSeries barSeries1 = new BarSeries(symbol, Interval.ONE_MIN);
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407360L)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407420L)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407480L)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407540L)));
+        barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407600L)));
         
         /* first iteration method: using list iterator - create in every iteration */
         long seconds = 7407360;        
-        for (AQuote quote : barSeries1) {
+        for (Quote quote : barSeries1) {
             assertEquals(seconds, quote.time().getDateTime().getMillis() / 1000L);
             seconds += 60;
         }
         /* second iteration method: internal queue. can be used once */
         seconds = 7407360;
-        AQuote quote = null;
+        Quote quote = null;
         int i; for (i = 0; i < 5; i++) {
             quote = barSeries1.nextQuote();
             LOG.debug(String.format("%s", quote));

@@ -3,9 +3,9 @@ package org.gitprof.alcolil.strategy;
 import org.gitprof.alcolil.common.*;
 
 public class QuoteDataProcessor {
-    private ATimeSeries timeSeries;
+    private TimeSeries timeSeries;
     
-    public void addQuote(AQuote quote) {
+    public void addQuote(Quote quote) {
         timeSeries.addQuote(quote);
     }
 }

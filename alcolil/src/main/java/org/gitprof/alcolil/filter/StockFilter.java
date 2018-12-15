@@ -48,14 +48,14 @@ public class StockFilter {
 		this.minLastPrice = lastPrice;
 	}
 	
-	private BigDecimal avgVolofLastXDays(AStock stock) throws IOException {
+	private BigDecimal avgVolofLastXDays(Stock stock) throws IOException {
 		//ATimeSeries timeSeries = DBManager.getInstance().readFromQuoteDB(stock.getSymbol());
 		//BigDecimal avgVol = new AlphaGraphAnalyzer(timeSeries.getBarSeries(AInterval.DAILY)).avgVolofXDays(lastXDaysForAvg, null);
 		//return avgVol;
 	    return null;
 	}
 	
-	private boolean isMatch(AStock stock) throws IOException{
+	private boolean isMatch(Stock stock) throws IOException{
 		boolean ret = true;
 		if ((avgVolofLastXDays(stock).compareTo(minAvgVol)) == 1 ||
 		    (stock.getMarketCap().compareTo(minMarketCap) == 1) ||
@@ -64,9 +64,9 @@ public class StockFilter {
 		return ret;
 	}
 	
-	public AStockCollection filter(AStockCollection stockCollection) throws IOException {
-		AStockCollection filteredCollection = new AStockCollection();
-		for (AStock stock : stockCollection) {
+	public StockCollection filter(StockCollection stockCollection) throws IOException {
+		StockCollection filteredCollection = new StockCollection();
+		for (Stock stock : stockCollection) {
 			if(isMatch(stock)) {
 				filteredCollection.add(stock);
 			}

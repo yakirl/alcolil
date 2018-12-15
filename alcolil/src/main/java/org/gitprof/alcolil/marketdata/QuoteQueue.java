@@ -10,25 +10,25 @@ import org.gitprof.alcolil.common.*;
  */
 public class QuoteQueue {
 
-	Queue<AQuote> quotes;
+	Queue<Quote> quotes;
 	
 	public QuoteQueue() {
-		quotes = new ArrayDeque<AQuote>();
+		quotes = new ArrayDeque<Quote>();
+	}
+
+	public void push(Quote quote) {
+		quoteQueueAccess(QueueOp.PUSH, quote);
+	}
+	
+	public Quote pop() {
+		return quoteQueueAccess(QueueOp.POP, null);
 	}
 	
 	private enum QueueOp {
 		PUSH, POP
 	}
 	
-	public void push(AQuote quote) {
-		quoteQueueAccess(QueueOp.PUSH, quote);
-	}
-	
-	public AQuote pop() {
-		return quoteQueueAccess(QueueOp.POP, null);
-	}
-	
-	private synchronized AQuote quoteQueueAccess(QueueOp op, AQuote quote) {
+	private synchronized Quote quoteQueueAccess(QueueOp op, Quote quote) {
 		if (QueueOp.PUSH == op ) {
 			quotes.add(quote);
 		} else { // POP

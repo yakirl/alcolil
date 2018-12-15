@@ -18,9 +18,9 @@ public class CoreScanner implements Runnable {
 	private Map<String, BaseAnalyzer> analyzers;
 	private Thread quotePipeThread;
 	private BaseQuotePipe quotePipe = null;
-	private AInterval interval;
-	private ATime start = null;
-	private ATime stop = null;
+	private Interval interval;
+	private Time start = null;
+	private Time stop = null;
 	private ScannerMode mode;
 	private int WAIT_FOR_PIPE_TIMEOUT_MILLIS = 10000;
 		
@@ -46,7 +46,7 @@ public class CoreScanner implements Runnable {
 	 * The QuotePipe runs on its own thread.
 	 * 
 	 */
-	private void setQuotePipe(ScannerMode mode, AInterval interval, ATime from, ATime to) {
+	private void setQuotePipe(ScannerMode mode, Interval interval, Time from, Time to) {
 		if (ScannerMode.REALTIME == mode) {
 			quotePipe = new RealTimePipe(symbols, from);
 		} else { // BACKTEST
@@ -61,19 +61,19 @@ public class CoreScanner implements Runnable {
 		
 	}
 	
-	public void backtest(List<String> symbols, AInterval interval, ATime start, ATime stop) {
+	public void backtest(List<String> symbols, Interval interval, Time start, Time stop) {
 		setQuotePipe(ScannerMode.BACKTEST, interval, start, stop);
 		mainLoop();
 	}
 	
-	public void realtime(List<String> symbols, AInterval interval) {
+	public void realtime(List<String> symbols, Interval interval) {
 		setQuotePipe(ScannerMode.REALTIME, interval, null, null);
 		mainLoop();
 	}
 	
 	
 	private void mainLoop() {
-		AQuote quote;
+		Quote quote;
 		BaseAnalyzer analyzer;
 		while(true) {
 			quote = quotePipe.getNextQuote();
