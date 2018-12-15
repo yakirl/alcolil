@@ -10,7 +10,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.DBManagerAPI;
+import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.marketdata.FetcherAPI;
 
@@ -24,17 +25,17 @@ public class HistoricalDataUpdater {
 	// we use pipe and not directly marketDataFetcher
     protected static final Logger LOG = LogManager.getLogger(HistoricalDataUpdater.class);
 	private AStockCollection stocks;
-	private DBManager dbManager;
+	private DBManagerAPI dbManager;
 	private FetcherAPI fetcher;
 	//private BackTestPipe quotePipe;
 	
 	public HistoricalDataUpdater() {
-		this.dbManager = DBManager.getInstance();
+		this.dbManager = FileSystemDBManager.getInstance();
 		this.fetcher = new YahooFetcher();
 	}
 
 	public HistoricalDataUpdater(FetcherAPI fetcher) {
-		this.dbManager = DBManager.getInstance();
+		this.dbManager = FileSystemDBManager.getInstance();
 		this.fetcher = fetcher;
 	}
 	

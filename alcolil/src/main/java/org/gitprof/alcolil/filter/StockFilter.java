@@ -8,7 +8,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.apache.commons.configuration2.XMLConfiguration;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.strategy.AlphaGraphAnalyzer;
 
 public class StockFilter {

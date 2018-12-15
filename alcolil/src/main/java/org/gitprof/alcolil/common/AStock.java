@@ -29,7 +29,7 @@ public class AStock implements CSVable {
 
 	@Override
 	public String[] convertToCSV() {
-	    String[] fields = new String[8];
+	    String[] fields = new String[5];
         fields[0] = symbol;
         fields[1] = sector;
         fields[2] = String.valueOf(marketCap);

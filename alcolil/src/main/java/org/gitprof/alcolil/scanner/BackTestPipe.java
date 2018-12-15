@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.List;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.DBManagerAPI;
+import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +30,7 @@ public class BackTestPipe extends BaseQuotePipe {
 	AInterval interval;
 	ATime start = null;
 	ATime stop = null;
-	DBManager dbManager;
+	DBManagerAPI dbManager;
 	PipeSource pipeSource;
 	
 	public enum PipeSource {
@@ -41,14 +42,14 @@ public class BackTestPipe extends BaseQuotePipe {
 		this.interval = interval;
 		start = from;
 		stop = to;
-		dbManager = DBManager.getInstance();
+		dbManager = FileSystemDBManager.getInstance();
 		this.pipeSource = pipeSource;
 	}
 
 	public BackTestPipe(List<String> symbols, AInterval interval) {
 		this.symbols = symbols;
 		this.interval = interval;
-		dbManager = DBManager.getInstance();
+		dbManager = FileSystemDBManager.getInstance();
 	}
 	
 	public AStockSeries getRemoteHistoricalData() {

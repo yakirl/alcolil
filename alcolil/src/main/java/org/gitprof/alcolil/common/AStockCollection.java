@@ -24,8 +24,12 @@ public class AStockCollection implements Iterable<AStock> {
 		return null;
 	}
 	
-	public AStock getStock(String symbol) {
-	    return stocks.get(symbol);
+	public AStock getStock(String symbol) throws Exception {
+	    AStock ret = stocks.get(symbol);
+	    if (ret == null) {
+	    	throw new Exception("symbol " + symbol + " not found");
+	    }
+	    return ret;
 	}
 	
 	public void add(AStock stock) {

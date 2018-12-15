@@ -35,24 +35,24 @@ public class AQuote implements CSVable {
 		this.alive = true;
 	}
 	
-	   public AQuote(String symbol,
-	            double open,
-	            double high,
-	            double low,
-	            double close,
-	            long volume,
-	            AInterval interval,
-	            ATime time) {
-	        this.asymbol = symbol;
-	        this.aopen = new BigDecimal(open);
-	        this.ahigh = new BigDecimal(high);
-	        this.alow = new BigDecimal(low);
-	        this.aclose = new BigDecimal(close);
-	        this.avolume = volume;
-	        this.ainterval = interval;
-	        this.atime = time;
-	        this.alive = true;
-	    }
+    public AQuote(String symbol,
+            double open,
+            double high,
+            double low,
+            double close,
+            long volume,
+            AInterval interval,
+            ATime time) {
+        this.asymbol = symbol;
+        this.aopen = new BigDecimal(open);
+        this.ahigh = new BigDecimal(high);
+        this.alow = new BigDecimal(low);
+        this.aclose = new BigDecimal(close);
+        this.avolume = volume;
+        this.ainterval = interval;
+        this.atime = time;
+        this.alive = true;
+    }
 	   
 	public AQuote(AQuote quote) {
 		//TODO

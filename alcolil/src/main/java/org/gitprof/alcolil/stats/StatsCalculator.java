@@ -1,13 +1,14 @@
 package org.gitprof.alcolil.stats;
 
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.DBManagerAPI;
+import org.gitprof.alcolil.database.FileSystemDBManager;
 
 public class StatsCalculator {
 	
-	DBManager dbManager = null;
+	DBManagerAPI dbManager = null;
 	
 	public StatsCalculator() {
-		dbManager = DBManager.getInstance();
+		dbManager = FileSystemDBManager.getInstance();
 	}
 	
 	public void calc() {

@@ -9,7 +9,7 @@ import java.util.List;
 import org.gitprof.alcolil.common.AInterval;
 import org.gitprof.alcolil.common.AQuote;
 import org.gitprof.alcolil.common.AStockSeries;
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.unittests.SuperTestCase;
 
 /**
@@ -26,7 +26,7 @@ public class QuoteStreamScatterTest extends SuperTestCase {
         List<String> symbols = new ArrayList<String>();
         symbols.add("GOOG_EXAMPLE");
         symbols.add("MSFT_EXAMPLE");        
-        AStockSeries stockSeries = DBManager.getInstance().readFromQuoteDB(symbols, AInterval.ONE_MIN);        
+        AStockSeries stockSeries = FileSystemDBManager.getInstance().readFromQuoteDB(symbols, AInterval.ONE_MIN);        
         QuoteQueue quoteQueue = new QuoteQueue();
         QuoteStreamScatter scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
         scatter.stop(); // we want that scatter will finish as soon as it is done all quotes

@@ -3,22 +3,13 @@ package org.gitprof.alcolil.marketdata;
 
 import java.lang.Thread;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Random;
 import java.util.Calendar;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.File;
 import java.net.*;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.gitprof.alcolil.common.*;
@@ -186,7 +177,7 @@ public class YahooFetcher implements FetcherAPI {
 		Stock yahooStock;
 		ABarSeries barSeries = new ABarSeries(symbol, interval);
 		try {
-			yahooStock = yahooAPI.get(symbol, false);
+			yahooStock = yahooAPI.get(symbol, true);
 			Interval yahooInterval = convertToYahooInterval(interval);
 			List<HistoricalQuote> histQuotes = yahooStock.getHistory(yahooInterval);
 			for (HistoricalQuote yahooQuote : histQuotes) {

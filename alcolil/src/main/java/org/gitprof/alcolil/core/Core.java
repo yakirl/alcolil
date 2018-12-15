@@ -15,7 +15,8 @@ import org.gitprof.alcolil.ui.UserInterface;
 import org.gitprof.alcolil.stats.StatsCalculator;
 import org.gitprof.alcolil.scanner.ParamOptimizer;
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.database.DBManager;
+import org.gitprof.alcolil.database.FileSystemDBManager;
+import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
 import org.gitprof.alcolil.marketdata.FetcherAPI;
 
@@ -28,8 +29,10 @@ public class Core
 	private Map<Module, Thread> threads;
 	private boolean toClose = false;
 	private AtomicReference<Command> waitingCommand;
+	private DBManagerAPI dbManager;
 
 	public Core() {
+		dbManager = FileSystemDBManager.getInstance();
 		waitingCommand = new AtomicReference<Command>();
 		waitingCommand.set(new Command("DO_NOTHING"));
 	}
@@ -39,7 +42,7 @@ public class Core
 	}
 	
 	private void setUpEnv() throws Exception {
-	    DBManager.validateDBStructure();
+	    dbManager.validateDBStructure();
 	}
 	
 	public void start(String[] args) {	    
@@ -111,7 +114,7 @@ public class Core
      ****************************/
 
     private void backtest(ATime from, ATime to) throws IOException {
-    	List<String> symbols = DBManager.getInstance().getStockCollection().getSymbols();
+    	List<String> symbols = FileSystemDBManager.getInstance().getStockCollection().getSymbols();
     	AInterval interval = AInterval.ONE_MIN;
     	BackTester backTester = new BackTester();
     	backTester.backtest(symbols, interval, from, to);

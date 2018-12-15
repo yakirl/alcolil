@@ -1,7 +1,5 @@
 package org.gitprof.alcolil.unittests;
 
-import org.gitprof.alcolil.global.Conf;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -1,14 +1,33 @@
+main INFO  database.FileSystemDBManager - Initializing FS DB Manager
+main DEBUG database.FileSystemDBManager - db conn string set to C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
 main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
-main INFO  core.Core - get historical data: symbol=GOOG. interval=ONE_MIN. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:01.000 -0400
-main INFO  core.Core - Parsing quotes from uri: C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\yahooquotes\quotes_GOOG_interval_1m_range_max.txt. symbol=GOOG. interval=ONE_MIN. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:00.000 -0400.
-main DEBUG core.Core - 1493993040000
-main DEBUG core.Core - 1493993340000
-main DEBUG core.Core - 1493993640000
-main DEBUG core.Core - 1493993940000
-main DEBUG core.Core - 1493994240000
-main DEBUG core.Core - 1493994540000
-main DEBUG core.Core - 1493994840000
-main DEBUG core.Core - 1493995140000
-main DEBUG core.Core - 1493995440000
-main DEBUG core.Core - 1493995740000
-main INFO  core.Core - Historical data was retrieved successfully!
+main INFO  database.FileSystemDBManagerTest - setUp test
+main DEBUG database.FileSystemDBManager - creating DB structure
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\logs
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\quotes
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\trades
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stats
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
+main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (0)
+main INFO  database.FileSystemDBManager - writing timeSeries for symbol: INTC
+main DEBUG database.FileSystemDBManager - UNQUOTE_DB LOCK (1)
+main INFO  database.FileSystemDBManagerTest - tearDown test
+main INFO  database.FileSystemDBManagerTest - setUp test
+main DEBUG database.FileSystemDBManager - creating DB structure
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\logs
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\quotes
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\trades
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stats
+main DEBUG database.FileSystemDBManager - verifying C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
+main INFO  database.FileSystemDBManagerTest - run testSetGetStockCollection
+main DEBUG database.FileSystemDBManager - setStockCollection
+main DEBUG database.FileSystemDBManager - getStockCollection
+main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\src\test\resources\dbroot\database\stocks\stocks_list.csv
+main DEBUG database.FileSystemDBManager - read 4 lines from file
+main INFO  database.FileSystemDBManagerTest - tearDown test

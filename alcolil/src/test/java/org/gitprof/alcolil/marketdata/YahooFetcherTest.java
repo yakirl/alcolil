@@ -1,9 +1,6 @@
 package org.gitprof.alcolil.marketdata;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -13,20 +10,17 @@ import org.gitprof.alcolil.common.ABarSeries;
 import org.gitprof.alcolil.common.AInterval;
 import org.gitprof.alcolil.common.ATime;
 
-
-import org.gitprof.alcolil.unittests.NonMockedTest;
 import org.gitprof.alcolil.unittests.SuperTestCase;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.Stock;
 
 /**
  * Unit test for simple App.
@@ -55,21 +49,24 @@ public class YahooFetcherTest extends SuperTestCase {
     }
     
     @SuppressWarnings("static-access")
+    @PrepareForTest({YahooFinance.class})
 	@Test
     public void testGetHistoricalAboveDaily() throws Exception {
         YahooFetcher fetcher = new YahooFetcher();
         
         // mock yahoo historical data
         // YahooFinance yahooAPI = Mockito.mock(YahooFinance.class);
-        yahoofinance.Stock stock = PowerMockito.mock(yahoofinance.Stock.class);
-        List<HistoricalQuote> histQuotes = Arrays.asList(
-        	new HistoricalQuote("MSFT", null, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
-        	new HistoricalQuote("MSFT", null, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
-        	new HistoricalQuote("MSFT", null, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
-        	new HistoricalQuote("MSFT", null, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
-        	new HistoricalQuote("MSFT", null, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L)
+       yahoofinance.Stock stock = Mockito.mock(yahoofinance.Stock.class);
+       Calendar cal = Calendar.getInstance();
+       cal.setTimeInMillis(102320L);
+       List<HistoricalQuote> histQuotes = Arrays.asList(
+        	new HistoricalQuote("MSFT", cal, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
+        	new HistoricalQuote("MSFT", cal, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
+        	new HistoricalQuote("MSFT", cal, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
+        	new HistoricalQuote("MSFT", cal, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L),
+        	new HistoricalQuote("MSFT", cal, new BigDecimal(1.1), new BigDecimal(0.4), new BigDecimal(2.3), new BigDecimal(1.02), new BigDecimal(2.1), 1023L)
         );
-        PowerMockito.when(stock.getHistory()).thenReturn(histQuotes);
+        Mockito.when(stock.getHistory(yahoofinance.histquotes.Interval.DAILY)).thenReturn(histQuotes);
         PowerMockito.mockStatic(YahooFinance.class);
         BDDMockito.given(YahooFinance.get("MSFT", true)).willReturn(stock);
         
@@ -81,6 +78,8 @@ public class YahooFetcherTest extends SuperTestCase {
         assertEquals(5, barSeries.size());
         
         PowerMockito.verifyStatic(YahooFinance.class);
+        YahooFinance.get("MSFT", true);
+        
         Mockito.verify(stock).getHistory(yahoofinance.histquotes.Interval.DAILY);
     }
 }

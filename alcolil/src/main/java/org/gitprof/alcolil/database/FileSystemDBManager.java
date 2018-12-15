@@ -26,42 +26,85 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.global.Conf;
 
-public class DBManager {
+/***********************
+ * @author Yakir
+ * 
+ *  DBManager provides high level database operations
+ *  Usage:
+ *  this class should be used as singleton object with concurrent usage among multiple java threads
+ *
+ */
 
-    protected static final Logger LOG = LogManager.getLogger(DBManager.class);
+public class FileSystemDBManager implements DBManagerAPI {
+
+	private static final String DB_CONN_STRING_ENV = "DB_CONN_STRING";
+    protected static final Logger LOG = LogManager.getLogger(FileSystemDBManager.class);
 	Map<DBSection, Lock> sectionLocks;	
-	private static DBManager dbManager = null;
+	private static DBManagerAPI dbManager = null;
 	private static int lockCount = 0;  // for debug
+	protected Conf conf;
 	
-	private DBManager() {
+	private FileSystemDBManager() {
+		String dbConnString = System.getenv(DB_CONN_STRING_ENV);
+		if (dbConnString != null) {
+			LOG.debug("db conn string set to " + dbConnString);
+			conf = new Conf(dbConnString);	
+		} else {
+			LOG.debug("db conn string isnt set, using default");
+			conf = new Conf();
+		}
 		sectionLocks = new EnumMap<DBSection, Lock>(DBSection.class);
 		initSectionLocks();
 	}
 	
-	public static DBManager getInstance() {
-		if (null == dbManager) { 
-			dbManager = new DBManager();
+	public static synchronized DBManagerAPI getInstance() {
+		if (null == dbManager) {
+			LOG.info("Initializing FS DB Manager");
+			dbManager = new FileSystemDBManager();
 		}
 		return dbManager;	
 	}
 	
-	/* verify the DataBase structure. should call this method soon as possible **/
-	public static void validateDBStructure() throws Exception{
-	    LOG.debug("validating DB structure");
+	public void dbStructureOperation(boolean create, boolean validate) throws Exception {
 	    try {	 
-    	    Field[] fields = Conf.class.getDeclaredFields();
-    	    LOG.debug(fields.length);
+    	    Field[] fields = conf.getClass().getDeclaredFields();
+    	    File file;
     	    for (Field f : fields) {
-    	        String path = f.get(null).toString();    	        
-    	        LOG.debug("verifying " + path);    	           	     
-    	        assertPathExists(path);    	            	     
+    	        String path = f.get(conf).toString();
+    	        file = new File(path);
+    	        if (conf.isDirAttr(f.getName())) {
+    	        	if (create) {
+    	        		file.mkdirs();
+    	        	}
+    	        } else if (conf.isFileAttr(f.getName())) {
+    	        	if (create) {
+    	        		file.createNewFile();
+    	        	}
+    	        } else {
+    	        	continue;
+    	        }
+    	        if (validate) {
+    	        	LOG.debug("verifying " + path);    	           	     
+    	        	assertPathExists(path);
+    	        }   	  
     	    }
 	    } catch (Exception e) {
-	        LOG.error("Couldnt verify DB structure. caught" + e.getMessage());
+	    	e.printStackTrace();
+	        LOG.error("Couldnt verify DB structure. caught " + e.getMessage());
 	        throw e;
 	    }
+	}
+	
+	/* verify the DataBase structure. should call this method soon as possible **/
+	public void validateDBStructure() throws Exception {
+	    LOG.debug("validating DB structure");
+	    dbStructureOperation(false, true);
+	}
+	
+	public void createDBStructure() throws Exception {
+	    LOG.debug("creating DB structure");
+	    dbStructureOperation(true, true);
 	}
 	
 	private void initSectionLocks() {
@@ -75,24 +118,6 @@ public class DBManager {
 		QUOTE_DB, TRADE_DB, STOCK_DB, STATS_DB
 	}
 	
-	private enum DirOp {
-		CREATE, DELETE
-	}
-	
-	private enum FileOp {
-        MODIFY, READ
-    }
-    
-	public void createDir(Path path) {
-		File folder = new File(path.toString());
-		folder.mkdirs();
-	}
-	
-	public void deleteDir(Path path) {
-		File folder = new File(path.toString());
-		folder.delete();
-	}
-	
 	private void lockQuoteDB() {
 	    LOG.debug(String.format("QUOTE_DB LOCK (%d)", lockCount));
 	    sectionLocks.get(DBSection.QUOTE_DB).lock();
@@ -100,54 +125,67 @@ public class DBManager {
 	}
 	
 	private void unlockQuoteDB() {
-	    LOG.debug(String.format("UNQUOTE_DB LOCK (%d)", lockCount));
+	    LOG.debug(String.format("QUOTE_DB UNLOCK (%d)", lockCount));
 	    sectionLocks.get(DBSection.QUOTE_DB).lock();
 	    lockCount--;
 	}
 	
-	/*****************
-	*** Stocks DB ****
-	******************/
-	public AStockCollection getStockCollection() throws IOException {
-	    return getStockCollection(Conf.stockListFile);
-	}
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#getStockCollection()
+	 */
 	
-	public AStockCollection getStockCollection(String stockListFile) throws IOException {
+	@Override
+	public AStockCollection getStockCollection() throws IOException {
 	    LOG.debug("getStockCollection");
 		AStockCollection stockCollection = new AStockCollection();
-		List<String[]> csvLines = readFromFile(stockListFile);
+		List<String[]> csvLines = readFromFile(conf.stockListFile);
+		LOG.debug("read " + csvLines.size() + " lines from file");
 		for (String[] csvLine : csvLines) {
 			stockCollection.add((AStock)(new AStock()).initFromCSV(csvLine));
 		}
 		return stockCollection;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#setStockCollection(org.gitprof.alcolil.common.AStockCollection)
+	 */
+	@Override
 	public void setStockCollection(AStockCollection stocks) throws IOException {
-	    setStockCollection(Conf.stockListFile, stocks);
-	}
-	
-	public void setStockCollection(String stockListFile, AStockCollection stocks) throws IOException {
 	    LOG.debug("setStockCollection");
-	    List<String[]> csvLines = new ArrayList<String[]>();	    
+	    List<String[]> csvLines = new ArrayList<String[]>();
+	    csvLines.add(conf.stockFileHeader);
 	    for (String symbol : stocks.getSymbols()) {
-	        String[] csvLine = stocks.getStock(symbol).convertToCSV();
-	        csvLines.add(csvLine);
+	    	try {
+	    		String[] csvLine = stocks.getStock(symbol).convertToCSV();
+	    		csvLines.add(csvLine);
+	    	} catch (Exception e) {
+	    		LOG.warn("didnt found symbol!  continuing...");
+	    	}
 	    }
-	    writeToFile(stockListFile, csvLines, false);
+	    writeToFile(conf.stockListFile, csvLines, false);
 	}
 	
 	
-	/********************
-	****** Quote DB *****
-	*********************/
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List, org.gitprof.alcolil.common.AInterval)
+	 */
+	@Override
 	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval) throws IOException {
 	    return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List)
+	 */
+	@Override
 	public AStockSeries readFromQuoteDB(List<String> symbols) throws IOException {
 	    return null;
 	}		
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List, org.gitprof.alcolil.common.AInterval, org.gitprof.alcolil.common.ATime, org.gitprof.alcolil.common.ATime)
+	 */
+	@Override
 	public AStockSeries readFromQuoteDB(List<String> symbols, AInterval interval, ATime from, ATime to) throws IOException {
 	    lockQuoteDB();	    
 		AStockSeries stockSeries = new AStockSeries(interval);
@@ -162,25 +200,35 @@ public class DBManager {
 		return stockSeries;
 	}
 	
-	private void writeToQuoteDB(AStockSeries stockSeries, boolean append) throws IOException {
-		for (String symbol : stockSeries.getSymbolList()) {
-			writeToQuoteDB(stockSeries.getBarSeries(symbol), append);
-		}
-	}
-	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#rewriteToQuoteDB(org.gitprof.alcolil.common.AStockSeries)
+	 */
+	@Override
 	public void rewriteToQuoteDB(AStockSeries stockSeries) throws IOException {
 		writeToQuoteDB(stockSeries, false);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#appendToQuoteDB(org.gitprof.alcolil.common.AStockSeries)
+	 */
+	@Override
 	public void appendToQuoteDB(AStockSeries stockSeries) throws IOException {
 		writeToQuoteDB(stockSeries, true);
 	}
 	
 	// TODO: handle unlocking in case of excpetion
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.lang.String)
+	 */
+	@Override
 	public ATimeSeries readFromQuoteDB(String symbol) throws IOException {
 	    return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.lang.String, org.gitprof.alcolil.common.AInterval, org.gitprof.alcolil.common.ATime, org.gitprof.alcolil.common.ATime)
+	 */
+	@Override
 	public ATimeSeries readFromQuoteDB(String symbol, AInterval interval, ATime from, ATime to) throws IOException {
 	    lockQuoteDB();
 	    LOG.info(String.format("reading timeSeries: symbol=%s. interval=%s. from=%s. to=%s", 
@@ -207,12 +255,18 @@ public class DBManager {
 		return timeSeries;
 	}
 	
-	// TODO: handle unlocking in case of excpetion
+	private void writeToQuoteDB(AStockSeries stockSeries, boolean append) throws IOException {
+		for (String symbol : stockSeries.getSymbolList()) {
+			writeToQuoteDB(stockSeries.getBarSeries(symbol), append);
+		}
+	}
+	
+	// TODO: handle unlocking in case of exception
 	private void writeToQuoteDB(ATimeSeries timeSeries, boolean append) throws IOException {
 	    lockQuoteDB();
 		String symbol = timeSeries.getSymbol();
 		LOG.info("writing timeSeries for symbol: " + symbol);
-		Path dirPath = Paths.get(Conf.quoteDB, symbol);
+		Path dirPath = Paths.get(conf.quoteDBDir, symbol);
 		createDir(dirPath);
 		List<AQuote> quotes;
 		List<String[]> csvLines = new ArrayList<String[]>();
@@ -229,21 +283,29 @@ public class DBManager {
 		unlockQuoteDB();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#rewriteToQuoteDB(org.gitprof.alcolil.common.ATimeSeries)
+	 */
+	@Override
 	public void rewriteToQuoteDB(ATimeSeries timeSeries) throws IOException {
 		writeToQuoteDB(timeSeries, false);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#appendToQuoteDB(org.gitprof.alcolil.common.ATimeSeries)
+	 */
+	@Override
 	public void appendToQuoteDB(ATimeSeries timeSeries) throws IOException {
 		writeToQuoteDB(timeSeries, true);
 	}
 	
-	// TODO: handle unlocking in case of excpetion
+	// TODO: handle unlocking in case of exception
 	private void writeToQuoteDB(ABarSeries barSeries, boolean append) throws IOException {
 	    lockQuoteDB();	  
 		String symbol = barSeries.getSymbol();
 		LOG.info("writing timeSeries for symbol: " + symbol);
 		AInterval interval = barSeries.getInterval();
-		Path dirPath = Paths.get(Conf.quoteDB + "\\" + symbol);
+		Path dirPath = Paths.get(conf.quoteDBDir + "\\" + symbol);
 		createDir(dirPath);
 		List<AQuote> quotes;
 		List<String[]> csvLines = new ArrayList<String[]>();
@@ -256,8 +318,8 @@ public class DBManager {
 		unlockQuoteDB();
 	}
 
-	public String getQuoteFileFullPath(String symbol, AInterval interval) {
-	    return Paths.get(Conf.quoteDB, symbol, symbol + "_" + interval.toString()).toString();  
+	private String getQuoteFileFullPath(String symbol, AInterval interval) {
+	    return Paths.get(conf.quoteDBDir, symbol, symbol + "_" + interval.toString()).toString();  
 	}
 		
 	private AInterval getIntervalByFilePath(String pathname) throws IOException {
@@ -299,19 +361,26 @@ public class DBManager {
 	    return time.getDayDateString().replace("-", "_");
 	}
 	
+	
 	/*************************************
 	******* Low level file operations *****
 	****************************************/
-	public void createFile(String path) {
-		
+	private enum DirOp {
+		CREATE, DELETE
 	}
 	
-	public void deleteFile(String path) {
-		
+	private enum FileOp {
+        MODIFY, READ
+    }
+    
+	private void createDir(Path path) {
+		File folder = new File(path.toString());
+		folder.mkdirs();
 	}
 	
-	public void writeToFile(String pathname, List<CSVable> csvables) {
-		
+	private void deleteDir(Path path) {
+		File folder = new File(path.toString());
+		folder.delete();
 	}
 	
 	private void writeToFile(String pathname, List<String[]> lines, boolean append) throws IOException {
