@@ -38,7 +38,6 @@ public class YahooFetcher implements FetcherAPI {
 	protected static final Logger LOG = LogManager.getLogger(Core.class);
 	QuoteStreamGather quoteStreamGather;
 	Thread quoteStreamGatherThread = null;
-	private QuoteQueue quoteQueue;
 	YahooFetcherUtils utils;
 	YahooFinance yahooAPI;
 	

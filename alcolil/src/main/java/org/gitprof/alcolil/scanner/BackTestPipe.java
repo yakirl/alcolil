@@ -14,14 +14,15 @@ import org.apache.logging.log4j.LogManager;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
 
 
-/*
+/**********************************************************
  * Supported interval fetching: ONE_MIN, FIVE_MIN, DAILY
  * 
  * 2 basic operations mode:
  *  - get data from local DB and stream it to the requesting module (usually scanner). in this case the Pipe will get the data chunk
  *  	at once from the DB, and will push quote by quote to the QuotePipe, by itself - no another thread is invoked.
  *  - get data from remote source and stream it to the requesting module (usually historicalDataUpdater)
- */
+ ***********************************************************/
+
 public class BackTestPipe extends BaseQuotePipe {
 
     private static final Logger LOG = LogManager.getLogger(BackTestPipe.class);
@@ -37,19 +38,20 @@ public class BackTestPipe extends BaseQuotePipe {
 		LOCAL, REMOTE
 	}
 	
-	public BackTestPipe(PipeSource pipeSource, List<String> sybmols, Interval interval, Time from, Time to) {
+	public BackTestPipe(DBManagerAPI dbManager, PipeSource pipeSource, List<String> symbols, Interval interval, Time from, Time to) {
 		this.symbols = symbols;
 		this.interval = interval;
 		start = from;
 		stop = to;
-		dbManager = FileSystemDBManager.getInstance();
+		this.dbManager = dbManager;
 		this.pipeSource = pipeSource;
 	}
 
-	public BackTestPipe(List<String> symbols, Interval interval) {
+	public BackTestPipe(DBManagerAPI dbManager, PipeSource pipeSource, List<String> symbols, Interval interval) {
 		this.symbols = symbols;
 		this.interval = interval;
-		dbManager = FileSystemDBManager.getInstance();
+		this.dbManager = dbManager;
+		this.pipeSource = pipeSource;
 	}
 	
 	public StockSeries getRemoteHistoricalData() {
@@ -84,7 +86,5 @@ public class BackTestPipe extends BaseQuotePipe {
 			startStreamingFromLocalDB();
 		else // REMOTE
 			assert false : "Backtest pipe doesnt support getting historical data async!";
-	}
-
-	
+	}	
 }

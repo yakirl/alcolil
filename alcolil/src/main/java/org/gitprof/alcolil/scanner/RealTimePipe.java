@@ -11,15 +11,16 @@ public class RealTimePipe extends BaseQuotePipe {
 	Time start;
 	List<String> symbols;
 	Interval interval;
+	FetcherAPI fetcher;
 	
-	public RealTimePipe(List<String> symbols, Time from) {
+	public RealTimePipe(FetcherAPI fetcher, List<String> symbols, Time from) {
 		this.symbols = symbols;
+		this.fetcher = fetcher;
 		start = from;
 		interval = Interval.ONE_MIN;
 	}
 	
 	private void startStreaming() {
-		FetcherAPI fetcher = new YahooFetcher();
 		fetcher.connect();
 		fetcher.activateStreaming(quoteQueue);
 		for (String symbol : symbols) {
@@ -31,7 +32,6 @@ public class RealTimePipe extends BaseQuotePipe {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		startStreaming();
 	}
 

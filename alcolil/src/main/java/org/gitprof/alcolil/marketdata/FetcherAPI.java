@@ -2,7 +2,7 @@ package org.gitprof.alcolil.marketdata;
 
 import org.gitprof.alcolil.common.*;
 
-/*
+/******************************************************************
  * 
  * Fetcher Interface:
  * 
@@ -36,7 +36,7 @@ import org.gitprof.alcolil.common.*;
  *   2. fetchHistoricalData() - return the whole data at once
  *   3. disconnect() - Close remote server connection and perform tear down operations.
  *  
- */
+ ********************************************************************************************/
 
 
 public interface FetcherAPI {
