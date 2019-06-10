@@ -11,11 +11,12 @@ import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.marketdata.FetcherAPI;
 
-/*
+/**********************************************************
  * this Class maintaining the database and keep it updated
  * once in a while the user should operate this module in order to retrieve info from marketdata sources
  * since most of the sources allow limited data fetching (only recent data)
- */
+ *******************************************************/
+
 public class HistoricalDataUpdater {
 
 	// we use pipe and not directly marketDataFetcher
@@ -23,20 +24,12 @@ public class HistoricalDataUpdater {
 	private StockCollection stocks;
 	private DBManagerAPI dbManager;
 	private FetcherAPI fetcher;
-
-	public HistoricalDataUpdater(DBManagerAPI dbManager, FetcherAPI fetcher) {
+	private BackTestPipe pipe;
+	
+	public HistoricalDataUpdater(DBManagerAPI dbManager, FetcherAPI fetcher, BackTestPipe pipe) {
 		this.dbManager = dbManager;
 		this.fetcher = fetcher;
-	}
-	
-	private StockSeries getRemoteHistoricalData(List<String> symbols, Interval interval) {
-		BackTestPipe quotePipe = new BackTestPipe(symbols, interval);
-		StockSeries stockSeries = quotePipe.getRemoteHistoricalData();
-		return stockSeries;
-	}
-			
-	private StockSeries getLocalStockSeries(List<String> symbols, Interval interval) throws IOException {
-		return dbManager.readFromQuoteDB(symbols, interval);
+		this.pipe = pipe;
 	}
 	
 	public void updateQuoteDB() throws IOException {
@@ -45,12 +38,12 @@ public class HistoricalDataUpdater {
 	}
 	
 	public void updateQuoteDB(List<String> symbols, Interval interval) throws IOException {
-	    LOG.info("updating Quote DB");
 		BarSeries remoteBarSeries, localBarSeries, mergedBarSeries;
 		StockSeries remoteStockSeries = getRemoteHistoricalData(symbols, interval);
 		StockSeries localStockSeries  = getLocalStockSeries(symbols, interval);
 		StockSeries mergedStockSeries = new StockSeries(interval);
 		for (String symbol : symbols) {
+			LOG.info(String.format("updating Quote DB for symbol: %s interval: %s", symbol, interval));
 			remoteBarSeries = remoteStockSeries.getBarSeries(symbol);
 			localBarSeries = localStockSeries.getBarSeries(symbol);
 			mergedBarSeries = BarSeries.mergeBarSeries(remoteBarSeries, localBarSeries);
@@ -58,4 +51,13 @@ public class HistoricalDataUpdater {
 		}
 		dbManager.rewriteToQuoteDB(mergedStockSeries);
 	}
+	
+	private StockSeries getRemoteHistoricalData(List<String> symbols, Interval interval) {
+		StockSeries stockSeries = pipe.getRemoteHistoricalData();
+		return stockSeries;
+	}
+			
+	private StockSeries getLocalStockSeries(List<String> symbols, Interval interval) throws IOException {
+		return dbManager.readFromQuoteDB(symbols, interval);
+	}	
 }
