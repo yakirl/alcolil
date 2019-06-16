@@ -4,8 +4,10 @@ import java.util.Map;
 import java.util.List;
 
 import org.gitprof.alcolil.common.*;
+import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.scanner.BaseQuotePipe;
 import org.gitprof.alcolil.strategy.BaseAnalyzer;
+import org.gitprof.alcolil.marketdata.FetcherAPI;
 
 /*
  * Scanner operation:
@@ -13,7 +15,9 @@ import org.gitprof.alcolil.strategy.BaseAnalyzer;
  * *) no option to reset scanner. to start a new scan - destroy and reconstruct 
  */
 public class CoreScanner implements Runnable {
-
+	
+	private DBManagerAPI dbManager;
+	private FetcherAPI fetcher;
 	private List<String> symbols;
 	private Map<String, BaseAnalyzer> analyzers;
 	private Thread quotePipeThread;
@@ -24,7 +28,9 @@ public class CoreScanner implements Runnable {
 	private ScannerMode mode;
 	private int WAIT_FOR_PIPE_TIMEOUT_MILLIS = 10000;
 		
-	public CoreScanner() {	
+	public CoreScanner(DBManagerAPI dbManager, FetcherAPI fetcher) {	
+	    this.fetcher = fetcher;
+		this.dbManager = dbManager;
         initializeAnalyzers();
 	}
 	
@@ -48,9 +54,9 @@ public class CoreScanner implements Runnable {
 	 */
 	private void setQuotePipe(ScannerMode mode, Interval interval, Time from, Time to) {
 		if (ScannerMode.REALTIME == mode) {
-			quotePipe = new RealTimePipe(symbols, from);
+			quotePipe = new RealTimePipe(fetcher, symbols, from);
 		} else { // BACKTEST
-			quotePipe = new BackTestPipe(BackTestPipe.PipeSource.LOCAL, symbols, interval,  from, to);
+			quotePipe = new BackTestPipe(dbManager, fetcher, BackTestPipe.PipeSource.LOCAL, symbols, interval,  from, to);
 		}
 		quotePipeThread = new Thread(quotePipe);
 		quotePipeThread.start(); // return immediately

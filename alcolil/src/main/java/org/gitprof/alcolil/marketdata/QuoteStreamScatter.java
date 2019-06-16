@@ -38,7 +38,7 @@ public class QuoteStreamScatter implements Runnable {
 	public QuoteStreamScatter(QuoteQueue quoteQueue, StockSeries stockSeries) {
 		stop = new AtomicBoolean();
 		jobs = new StockSeries(stockSeries);
-		iterators = new HashMap<BarSeries, Iterator<Quote>>();
+		// iterators = new HashMap<BarSeries, Iterator<Quote>>();
 		stop.set(false);
 		this.quoteQueue = quoteQueue;
 		waitMillis = 100;

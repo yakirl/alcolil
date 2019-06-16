@@ -7,11 +7,12 @@ import java.util.List;
 
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManagerAPI;
-import org.gitprof.alcolil.database.FileSystemDBManager;
+// import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.marketdata.QuoteStreamScatter;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.gitprof.alcolil.marketdata.QuoteQueue;
+import org.gitprof.alcolil.marketdata.FetcherAPI;
 
 
 /**********************************************************
@@ -38,7 +39,8 @@ public class BackTestPipe extends BaseQuotePipe {
 		LOCAL, REMOTE
 	}
 	
-	public BackTestPipe(DBManagerAPI dbManager, PipeSource pipeSource, List<String> symbols, Interval interval, Time from, Time to) {
+	public BackTestPipe(DBManagerAPI dbManager, FetcherAPI fetcher, PipeSource pipeSource, List<String> symbols, Interval interval, Time from, Time to) {
+		super(fetcher);
 		this.symbols = symbols;
 		this.interval = interval;
 		start = from;
@@ -47,8 +49,17 @@ public class BackTestPipe extends BaseQuotePipe {
 		this.pipeSource = pipeSource;
 	}
 
-	public BackTestPipe(DBManagerAPI dbManager, PipeSource pipeSource, List<String> symbols, Interval interval) {
+	public BackTestPipe(DBManagerAPI dbManager, FetcherAPI fetcher, PipeSource pipeSource, List<String> symbols, Interval interval) {
+		super(fetcher);
 		this.symbols = symbols;
+		this.interval = interval;
+		this.dbManager = dbManager;
+		this.pipeSource = pipeSource;
+	}
+	
+	public BackTestPipe(DBManagerAPI dbManager, FetcherAPI fetcher, PipeSource pipeSource, Interval interval) throws IOException {
+		super(fetcher);
+		this.symbols = dbManager.getStockCollection().getSymbols();
 		this.interval = interval;
 		this.dbManager = dbManager;
 		this.pipeSource = pipeSource;

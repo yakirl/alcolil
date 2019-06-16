@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.gitprof.alcolil.scanner.BackTester;
+import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.scanner.RealTimeScanner;
 import org.gitprof.alcolil.ui.UserInterface;
 import org.gitprof.alcolil.stats.StatsCalculator;
@@ -19,7 +20,7 @@ import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.marketdata.HistoricalDataUpdater;
 import org.gitprof.alcolil.marketdata.FetcherAPI;
-
+import org.gitprof.alcolil.marketdata.YahooFetcher;
 
 public class Core 
 {
@@ -58,8 +59,7 @@ public class Core
     }
     
 	public void postCommand(Command cmd) {
-		System.out.println( "core posting command: " + cmd.opcode());
-		LOG.info("Core posting command");
+		LOG.info( "Core posting command: " + cmd.opcode());
     	if ("DO_NOTHING" == waitingCommand.get().opcode())
     		waitingCommand.set(cmd);
     }
@@ -121,8 +121,9 @@ public class Core
     }
     
     private void realTimeScanStart() {
+    	// TODO
     	// run as thread
-        RealTimeScanner realtime = new RealTimeScanner();
+        // RealTimeScanner realtime = new RealTimeScanner();
         // realtime.startRealtime();
     }
     
@@ -131,7 +132,10 @@ public class Core
     }
     
     private void updateLocalDB() throws IOException {
-    	HistoricalDataUpdater updater = new HistoricalDataUpdater();
+    	DBManagerAPI dbManager = FileSystemDBManager.getInstance();
+    	FetcherAPI fetcher = new YahooFetcher();
+    	BackTestPipe pipe = new BackTestPipe(dbManager, fetcher, BackTestPipe.PipeSource.LOCAL, Interval.ONE_MIN);
+    	HistoricalDataUpdater updater = new HistoricalDataUpdater(dbManager, fetcher, pipe);
     	updater.updateQuoteDB();
     }
     

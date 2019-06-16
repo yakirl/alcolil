@@ -32,14 +32,10 @@ public abstract class BaseQuotePipe implements Runnable {
 	QuoteQueue quoteQueue;
 	AtomicBoolean closePipe;
 	
-	public void setMarketDataFetcher() {
-		fetcher = new YahooFetcher();
-	}
-	
-	public BaseQuotePipe() {
+	public BaseQuotePipe(FetcherAPI fetcher) {
+		this.fetcher = fetcher;
 	    closePipe = new AtomicBoolean();
 		closePipe.set(false);
-		setMarketDataFetcher();
 	}
 	
 	public void closePipe() {

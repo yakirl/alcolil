@@ -14,8 +14,8 @@ public class RealTimePipe extends BaseQuotePipe {
 	FetcherAPI fetcher;
 	
 	public RealTimePipe(FetcherAPI fetcher, List<String> symbols, Time from) {
+		super(fetcher);
 		this.symbols = symbols;
-		this.fetcher = fetcher;
 		start = from;
 		interval = Interval.ONE_MIN;
 	}

@@ -1,16 +1,2 @@
-main INFO  database.FileSystemDBManager - Initializing FS DB Manager
-main DEBUG database.FileSystemDBManager - db conn string isnt set, using default
-main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
-main INFO  global.Conf - current working directory: C:\Users\yakir\eclipse-workspace\alcolil\alcolil
-main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (0)
-main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (1)
-main INFO  database.FileSystemDBManager - reading timeSeries: symbol=GOOG_EXAMPLE.
-main DEBUG database.FileSystemDBManager - reading quotes of symbol: GOOG_EXAMPLE. interval: ONE_MIN. from file C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\GOOG_EXAMPLE\ONE_MIN\1.csv
-main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\GOOG_EXAMPLE\ONE_MIN\1.csv
-main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (2)
-main DEBUG database.FileSystemDBManager - QUOTE_DB LOCK (1)
-main INFO  database.FileSystemDBManager - reading timeSeries: symbol=MSFT_EXAMPLE.
-main DEBUG database.FileSystemDBManager - reading quotes of symbol: MSFT_EXAMPLE. interval: ONE_MIN. from file C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\MSFT_EXAMPLE\ONE_MIN\1.csv
-main DEBUG database.FileSystemDBManager - reading from file:C:\Users\yakir\eclipse-workspace\alcolil\alcolil\database\quotes\MSFT_EXAMPLE\ONE_MIN\1.csv
-main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (2)
-main DEBUG database.FileSystemDBManager - QUOTE_DB UNLOCK (1)
+main INFO  core.Core - get historical data: symbol=MSFT. interval=DAILY. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:01.000 -0400
+main INFO  core.Core - Historical data was retrieved successfully!
