@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import yahoofinance.YahooFinance;
@@ -27,6 +28,7 @@ import yahoofinance.histquotes.HistoricalQuote;
  */
 
 @RunWith(PowerMockRunner.class)
+@PowerMockIgnore("javax.management.*")
 public class YahooFetcherTest extends SuperTestCase {   
     
     public YahooFetcherTest() {
@@ -37,7 +39,7 @@ public class YahooFetcherTest extends SuperTestCase {
     public void testGetHistoricalIntraDay() throws Exception {
         YahooFetcher fetcher = new YahooFetcher();    
         fetcher.utils.QUOTES_URL_PATTERN = yahooQuotesTestFilePattern;
-        /* should be 10 quotes between them (inclusive)*/
+        // should be 10 quotes between them (inclusive)
         Time from = new Time(1493993040L);
         Time to = new Time(1493995741L);         
         BarSeries barSeries = fetcher.getHistoricalData("GOOG", Interval.ONE_MIN, from, to);
@@ -47,7 +49,7 @@ public class YahooFetcherTest extends SuperTestCase {
         double eps = 0.0001;
         assertEquals(930.7500, barSeries.getQuote(1).high().doubleValue(), eps);
     }
-    
+  
     @SuppressWarnings("static-access")
     @PrepareForTest({YahooFinance.class})
 	@Test
@@ -82,4 +84,5 @@ public class YahooFetcherTest extends SuperTestCase {
         
         Mockito.verify(stock).getHistory(yahoofinance.histquotes.Interval.DAILY);
     }
+    
 }
