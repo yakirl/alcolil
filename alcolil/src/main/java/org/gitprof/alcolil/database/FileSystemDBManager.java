@@ -33,6 +33,7 @@ import org.gitprof.alcolil.common.*;
  *  DBManager provides high level database operations
  *  Usage:
  *  this class should be used as singleton object with concurrent usage among multiple java threads
+ *  access to files is synchronized using lock for every database (locks the entire db during the operation)
  *
  */
 

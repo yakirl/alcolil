@@ -38,7 +38,11 @@ public class Conf {
 	
 	public String appendToConfsDir(String... subpath) {      
         return append(confsDir, subpath);
-    }   
+    }
+	
+	public String srcDir() {
+		return append(rootDir, "src");
+	}
 	
 	private String append(String dir, String... subpath) {
 	    return Paths.get(dir, subpath).toString();

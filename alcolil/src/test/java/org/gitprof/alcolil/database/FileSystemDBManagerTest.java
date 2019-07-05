@@ -1,6 +1,9 @@
 package org.gitprof.alcolil.database;
 
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -13,6 +16,10 @@ import static org.junit.Assert.assertEquals;
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.FileSystemDBManager;
 import org.gitprof.alcolil.unittests.SuperTestCase;
+
+import org.python.util.PythonInterpreter;
+// import org.black.ninia.Jep;
+import org.python.core.*;
 
 /**
  * Unit test for DBManager.
@@ -41,6 +48,36 @@ public class FileSystemDBManagerTest extends SuperTestCase {
     	LOG.info("tearDown test");
     }   
         
+	// @Test
+	public void testTestJython() throws Exception {
+		PythonInterpreter interp = new PythonInterpreter();
+		String srcDir = Paths.get("").toAbsolutePath().toString() + "/src";
+        System.out.println(srcDir);
+        interp.exec("import sys");
+        interp.set("srcDir", srcDir);
+        interp.exec("sys.path.append(srcDir)");
+        interp.exec("print sys.path");
+        interp.exec("from pymodules import db_client");
+        interp.exec("client = db_client.MarketStoreClient()");
+        
+        // call method with object
+       	BarSeries barSeries = new BarSeries("INTC", Interval.ONE_MIN);
+        Quote quote = new Quote("INTC", 1.02, 3.60, 0.60, 1.43, 20500, Interval.ONE_MIN, new Time(3202320));
+    	barSeries.addQuote(quote);
+        interp.set("obj", barSeries);
+        interp.eval("client.write_to_quote_db(obj)");
+        
+        // call method with list
+        int[] intArr = {11,22,33,44};
+        interp.set("intArr", intArr);
+        PyObject pyObject = interp.eval("client.test(intArr)");
+        List<Integer> someList = (ArrayList<Integer>) pyObject.__tojava__(ArrayList.class);
+        for (Integer i: someList) {
+        	System.out.println(i);
+        }
+        interp.close();
+	}
+	
     @Test
     public void testSetGetStockCollection() throws Exception {
     	LOG.info("run testSetGetStockCollection");
