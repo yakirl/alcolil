@@ -30,7 +30,7 @@ public class GraphEvent {
     
     /* somewhat complex mechanism for creating event functionality, this is just to avoid 
      * mapping of type->function in every event operation
-     * probably we can pass it and use HashMap or reflection instead :-\
+     * probably we can omit it and use HashMap or reflection instead :-\
      */
     private static EventFunction createEventFunction(GraphEvent event, EventType eventType) {
         EventFunction func = null;    

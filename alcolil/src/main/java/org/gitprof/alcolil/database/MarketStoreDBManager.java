@@ -116,7 +116,8 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		// TODO: implement when destroy API of marketstore is ready
 	}
 	
-	public void appendToQuoteDB(BarSeries barSeries) throws jep.JepException {    	
+	public void appendToQuoteDB(BarSeries barSeries) throws jep.JepException { 
+		LOG.info("appending to quote DB. num quotes =" + barSeries.size());
         jep.set("obj", barSeries);
         jep.eval("client.write_to_quote_db(obj)");        
 	}

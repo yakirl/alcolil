@@ -1,2 +1,0 @@
-main INFO  core.Core - get historical data: symbol=MSFT. interval=DAILY. from=2017-05-05 10:04:00.000 -0400. to=2017-05-05 10:49:01.000 -0400
-main INFO  core.Core - Historical data was retrieved successfully!

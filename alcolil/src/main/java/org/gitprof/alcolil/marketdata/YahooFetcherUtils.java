@@ -11,6 +11,15 @@ import org.gitprof.alcolil.common.Interval;
  *  units for range: d/mo/y
  *  units for interval: m/h/d/wk/mo
  *  URL for example: https://query1.finance.yahoo.com/v7/finance/chart/goog?range=3mo&interval=1d&indicators=quote&includeTimestamps=true
+ *  
+ *  Interval and rage limitation for Yahoo finance:
+ *  	
+ *  ----------------------------------------------------|
+ *   interval      range                                |
+ *     1d        1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, max |
+ *     1m        1d, 5d  (no max!!!)                    |
+ *  ----------------------------------------------------|   	
+ *  
  */
 
 
@@ -22,14 +31,17 @@ public class YahooFetcherUtils {
 	String getQuotesUrl(String symbol, Interval interval) {
 		String intervalUnits = null;
 		int intervalLength = 0;
+		int rangeDays = 0;
 		switch (interval) {
 		case ONE_MIN:
 			intervalUnits = "m";
 			intervalLength = 1;
+			rangeDays = 1;
 			break;
 		case FIVE_MIN:
 			intervalUnits = "m";
 			intervalLength = 5;
+			rangeDays = 5;
 			break;
 		case DAILY:
 			intervalUnits = "d";
@@ -38,7 +50,7 @@ public class YahooFetcherUtils {
 		default:
 			assert false : "Got unexpected time interval for yahoo quotes URL";
 		}
-		return getQuotesUrl(symbol, intervalUnits, intervalLength, 0);
+		return getQuotesUrl(symbol, intervalUnits, intervalLength, rangeDays);
 	}
 
 	// currently supports only daily interval

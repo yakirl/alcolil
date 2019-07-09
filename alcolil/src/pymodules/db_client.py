@@ -35,6 +35,8 @@ INTERVAL_MAP = {
     "DAILY": "24H",
 }
 
+READ_LIMIT = 50
+
 class MarketStoreClient(object):
 
     def __init__(self):
@@ -61,18 +63,28 @@ class MarketStoreClient(object):
         debug("Writing to quote DB: symbol %s. interval %s" % (symbol, interval))
         for quote in barSeries:
             timestamp = quote.time().getSeconds()
-            data = np.array([(pd.Timestamp(timestamp).value / 10**9, quote.open(), quote.high(), quote.low(), quote.close(), quote.volume())],
-                            dtype=[('Epoch', 'i8'),('Open', 'f4'),('High', 'f4'), ('Low', 'f4'), ('Close', 'f4'), ('Volume', 'i8')])
-            self.client.write(data, self.bucket(symbol, interval))
+            self.write(symbol, interval, timestamp, quote.open(), quote.high(), quote.low(), quote.close(), quote.volume())
+
+    def write(self, symbol, interval, timestamp, _open, high, low, close, volume):
+        data = np.array([(pd.Timestamp(timestamp).value, _open, high, low, close, volume)],
+                        dtype=[('Epoch', 'i8'),('Open', 'f4'),('High', 'f4'), ('Low', 'f4'), ('Close', 'f4'), ('Volume', 'i8')])
+        self.client.write(data, self.bucket(symbol, interval))
 
     def read_from_quote_db(self, symbol, interval):
-        interval = self.convert(interval)
-        debug("Reading from quote DB: symbol %s. interval %s" % (symbol, interval))
-        param = pymkts.Params(str(symbol), str(interval), self.quoteAttributeGroup, limit=10)
-        replyArr = self.client.query(param).first().array.tolist()
+        replyArr = self.read(symbol, interval).array.tolist()
         retArr = ArrayList(replyArr) if is_jep() else replyArr
         debug("read list: %s" % retArr)
         return retArr
+
+    def print_table(self, symbol, interval):
+        table = self.read(symbol, interval).df()
+        print(table)
+
+    def read(self, symbol, interval):
+        interval = self.convert(interval)
+        debug("Reading from quote DB: symbol %s. interval %s" % (symbol, interval))
+        param = pymkts.Params(str(symbol), str(interval), self.quoteAttributeGroup, limit=READ_LIMIT)
+        return self.client.query(param).first()
 
     def destroy(self, symbol, interval):
         debug("Destroy quote DB: symbol %s. interval %s" % (symbol, interval))

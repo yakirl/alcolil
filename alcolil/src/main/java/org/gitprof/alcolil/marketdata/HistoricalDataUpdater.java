@@ -18,11 +18,9 @@ import org.gitprof.alcolil.scanner.BackTestPipe;
 
 public class HistoricalDataUpdater {
 
-	// we use pipe and not directly marketDataFetcher
     protected static final Logger LOG = LogManager.getLogger(HistoricalDataUpdater.class);
-	// private StockCollection stocks;
 	private DBManagerAPI dbManager;
-	// private FetcherAPI fetcher;
+	// we use pipe and not directly marketDataFetcher
 	private BackTestPipe pipe;
 	
 	public HistoricalDataUpdater(DBManagerAPI dbManager, BackTestPipe pipe) {

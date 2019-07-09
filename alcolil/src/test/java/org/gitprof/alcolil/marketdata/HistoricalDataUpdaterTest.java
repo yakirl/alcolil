@@ -9,7 +9,7 @@ import org.gitprof.alcolil.scanner.BackTestPipe;
 import org.gitprof.alcolil.unittests.SuperTestCase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
-import org.junit.Test;;
+import org.junit.Test;
 
 public class HistoricalDataUpdaterTest extends SuperTestCase {
 

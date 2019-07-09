@@ -64,7 +64,7 @@ public class Core
     		waitingCommand.set(cmd);
     }
 	
-	private void commandDispatcher() throws IOException {
+	private void commandDispatcher() throws Exception {
     	Command cmd = waitingCommand.get();
     	LOG.info("Core dispatching command: " + cmd.opcode());
     	if ("RUN_BACKTEST" == cmd.opcode()) {
@@ -131,11 +131,11 @@ public class Core
     	
     }
     
-    private void updateLocalDB() throws IOException {
+    private void updateLocalDB() throws Exception {
     	DBManagerAPI dbManager = FileSystemDBManager.getInstance();
     	FetcherAPI fetcher = new YahooFetcher();
     	BackTestPipe pipe = new BackTestPipe(dbManager, fetcher, BackTestPipe.PipeSource.LOCAL, Interval.ONE_MIN);
-    	HistoricalDataUpdater updater = new HistoricalDataUpdater(dbManager, fetcher, pipe);
+    	HistoricalDataUpdater updater = new HistoricalDataUpdater(dbManager, pipe);
     	updater.updateQuoteDB();
     }
     

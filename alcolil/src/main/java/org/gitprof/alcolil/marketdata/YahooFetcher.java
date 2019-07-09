@@ -1,6 +1,6 @@
 package org.gitprof.alcolil.marketdata;
 
-
+import org.gitprof.alcolil.utils.Parsing;
 import java.lang.Thread;
 import java.io.IOException;
 import java.util.Calendar;
@@ -10,15 +10,17 @@ import java.io.InputStreamReader;
 import java.io.File;
 import java.net.*;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gitprof.alcolil.common.*;
 import org.joda.time.LocalDate;
 
 import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.HistoricalQuote;
 
-import org.gitprof.alcolil.core.Core;
+// import org.gitprof.alcolil.core.Core;
 
 
 /*****************
@@ -35,7 +37,7 @@ import org.gitprof.alcolil.core.Core;
 public class YahooFetcher implements FetcherAPI {
 
     private int MAXIMUM_DAYS_FOR_HISTORICAL_QUTOES = 10; // this is totally arbitrary :-\
-	protected static final Logger LOG = LogManager.getLogger(Core.class);
+	protected static final Logger LOG = LogManager.getLogger(YahooFetcher.class);
 	QuoteStreamGather quoteStreamGather;
 	Thread quoteStreamGatherThread = null;
 	YahooFetcherUtils utils;
@@ -117,7 +119,7 @@ public class YahooFetcher implements FetcherAPI {
 	
 	private BarSeries parseQuotesFromURL(String urlStr, String symbol, Interval interval, Time from, Time to) throws Exception {
 	    URL url;
-	    if (urlStr.contains("http://")) {
+	    if (urlStr.contains("https://")) {
 	        url = new URL(urlStr);
 	    } else {
 	        url = new File(urlStr).toURI().toURL();
@@ -128,7 +130,42 @@ public class YahooFetcher implements FetcherAPI {
 	    }
         to   = to.roundToXMin(interval);
 	    LOG.info("Parsing quotes from uri: " + urlStr + String.format(". symbol=%s. interval=%s. from=%s. to=%s.", 
-	                                                                  symbol, interval.toString(), from.toString(), to.toString()));	  
+	                                                                  symbol, interval.toString(), from.toString(), to.toString()));
+	    return quotesFromJSON(url, symbol, interval, from, to);
+	}
+	
+	private BarSeries quotesFromJSON(URL url, String symbol, Interval interval, Time from, Time to) throws IOException {
+		JSONObject json = Parsing.readJsonFromUrl(url.toString());
+		JSONObject data = (JSONObject) json.getJSONObject("chart").getJSONArray("result").get(0);
+		JSONArray timestamps, opens, highs, lows, closes, volumes; 
+		timestamps = data.getJSONArray("timestamp");
+		opens = ((JSONObject) data.getJSONObject("indicators").getJSONArray("quote").get(0)).getJSONArray("open");
+		highs = ((JSONObject) data.getJSONObject("indicators").getJSONArray("quote").get(0)).getJSONArray("high");
+		lows = ((JSONObject) data.getJSONObject("indicators").getJSONArray("quote").get(0)).getJSONArray("low");
+		closes = ((JSONObject) data.getJSONObject("indicators").getJSONArray("quote").get(0)).getJSONArray("close");
+		volumes = ((JSONObject) data.getJSONObject("indicators").getJSONArray("quote").get(0)).getJSONArray("volume");
+		BarSeries barSeries = new BarSeries(symbol, interval);
+		int deadQuotes = 0;
+		for (int i = 0; i < timestamps.length(); i++) {
+			try {
+				Quote quote = new Quote(symbol,
+										opens.getDouble(i),
+										highs.getDouble(i),
+										lows.getDouble(i),
+										closes.getDouble(i),
+										volumes.getLong(i),
+										interval,
+										new Time(timestamps.getLong(i)));
+				barSeries.addQuote(quote);
+			} catch (Exception e) {
+				deadQuotes+=1;			
+			}
+		}
+		LOG.info("total dead quotes: " + deadQuotes);
+		return barSeries;
+	}
+	
+	private BarSeries quotesFromCSV(URL url, String symbol, Interval interval, Time from, Time to) throws IOException {
 	    BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
         String line = null;        
         BarSeries barSeries = new BarSeries(symbol, interval);
