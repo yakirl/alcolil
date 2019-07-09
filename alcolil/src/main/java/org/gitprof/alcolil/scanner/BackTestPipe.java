@@ -79,7 +79,7 @@ public class BackTestPipe extends BaseQuotePipe {
 		return stockSeries;
 	}
 	
-	private void startStreamingFromLocalDB() {
+	private void startStreamingFromLocalDB() throws Exception {
 		try {
 			StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
 			quoteQueue = new QuoteQueue();
@@ -93,8 +93,12 @@ public class BackTestPipe extends BaseQuotePipe {
 	
 	@Override
 	public void run() {
-		if (PipeSource.LOCAL == pipeSource) 
-			startStreamingFromLocalDB();
+		if (PipeSource.LOCAL == pipeSource)
+			try {
+				startStreamingFromLocalDB();
+			} catch(Exception e) {
+				LOG.error(e.getMessage());
+			}
 		else // REMOTE
 			assert false : "Backtest pipe doesnt support getting historical data async!";
 	}	

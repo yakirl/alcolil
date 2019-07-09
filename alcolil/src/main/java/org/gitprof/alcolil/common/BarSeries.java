@@ -84,6 +84,7 @@ public class BarSeries implements Iterable<Quote> {
 		return quotes.size();
 	}
 	
+	// TODO: this method is used only by UTs, remove it and handle inside UTs
 	public Quote getQuote(int ix) {
 		return quotes.get(ix);
 	}

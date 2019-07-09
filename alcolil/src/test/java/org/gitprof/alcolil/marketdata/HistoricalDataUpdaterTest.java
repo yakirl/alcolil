@@ -16,8 +16,8 @@ public class HistoricalDataUpdaterTest extends SuperTestCase {
     public HistoricalDataUpdaterTest() {
         super();
     }
-    
-/*    @Test
+   /* 
+    @Test
     public void testUpdateQuoteDB() throws IOException {
         YahooFetcher fetcher = new YahooFetcher();
         ArrayList<String> symbols = new ArrayList<String>();

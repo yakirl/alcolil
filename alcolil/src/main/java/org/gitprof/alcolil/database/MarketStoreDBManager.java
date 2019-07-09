@@ -38,6 +38,16 @@ public class MarketStoreDBManager implements DBManagerAPI {
 			LOG.debug("db conn string isnt set, using default");
 			conf = new Conf();
 		}
+		initJep();
+	}
+	
+	private void initJep() throws jep.JepException {
+		jep = new jep.Jep();
+		jep.eval("import sys");
+        jep.set("srcDir", conf.srcDir());
+        jep.eval("sys.path.append(srcDir)");
+        jep.eval("from pymodules import db_client");
+        jep.eval("client = db_client.MarketStoreClient()");
 	}
 	
 	public static synchronized DBManagerAPI getInstance() throws jep.JepException {
@@ -47,11 +57,7 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 	
 	public void validateDBStructure() throws Exception {
-		
-	}
-	
-	public void createDBStructure() throws Exception {
-		initJep();
+		jep.invoke("client.test_connection");
 	}
 	
 	public void close() throws jep.JepException {
@@ -67,21 +73,24 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		
 	}
 
-	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws IOException {
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws jep.JepException {
 		StockSeries stockSeries = new StockSeries(Interval.ONE_MIN);
+		BarSeries barSeries;
+		for (String symbol: symbols) {
+			barSeries = readFromQuoteDB(symbol, interval);
+			stockSeries.addBarSeries(symbol, barSeries);
+		}
 		return stockSeries;
 	}
 
-	public void rewriteToQuoteDB(StockSeries stockSeries) throws IOException {
+	public void rewriteToQuoteDB(StockSeries stockSeries) throws Exception {
 		
 	}
 
-	public void appendToQuoteDB(StockSeries stockSeries) throws IOException {
-		
-	}
-
-	public void appendToQuoteDB(TimeSeries timeSeries) throws IOException {
-		
+	public void appendToQuoteDB(StockSeries stockSeries) throws jep.JepException {
+		for (String symbol: stockSeries.getSymbolList()) {
+			appendToQuoteDB(stockSeries.getBarSeries(symbol));
+		}
 	}
 	
 	public TimeSeries readFromQuoteDB(String symbol) throws IOException {
@@ -92,17 +101,22 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	public void rewriteToQuoteDB(TimeSeries timeSeries) throws IOException {
 		
 	}
-	
-	private void initJep() throws jep.JepException {
-		jep = new jep.Jep();
-		jep.eval("import sys");
-        jep.set("srcDir", conf.srcDir());
-        jep.eval("sys.path.append(srcDir)");
-        jep.eval("from pymodules import db_client");
-        jep.eval("client = db_client.MarketStoreClient()");
+
+	public void appendToQuoteDB(TimeSeries timeSeries) throws IOException {
+		
 	}
 	
-	public void writeToQuoteDB(BarSeries barSeries) throws jep.JepException {    	
+	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws jep.JepException {
+		        
+        Object res = jep.invoke("client.read_from_quote_db", symbol, interval.name());                                       
+        return convertPyResToBarSeries(symbol, interval, res);
+	}
+	
+	public void rewriteToQuoteDB(BarSeries barSeries) throws jep.JepException {
+		// TODO: implement when destroy API of marketstore is ready
+	}
+	
+	public void appendToQuoteDB(BarSeries barSeries) throws jep.JepException {    	
         jep.set("obj", barSeries);
         jep.eval("client.write_to_quote_db(obj)");        
 	}
@@ -125,11 +139,5 @@ public class MarketStoreDBManager implements DBManagerAPI {
         	barSeries.addQuote(quote);
         }
 		return barSeries;
-	}
-	
-	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws jep.JepException {
-		System.out.println("read from quote DB bar series");        
-        Object res = jep.invoke("client.read_from_quote_db", symbol, interval.name());                                       
-        return convertPyResToBarSeries(symbol, interval, res);
 	}
 }

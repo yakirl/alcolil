@@ -40,7 +40,7 @@ public class FileSystemDBManagerTest extends SuperTestCase {
 	@Before
     public void setUp() throws Exception {
     	LOG.info("setUp test");
-    	dbManager.createDBStructure();
+    	dbManager.validateDBStructure();
     }
     
 	@After

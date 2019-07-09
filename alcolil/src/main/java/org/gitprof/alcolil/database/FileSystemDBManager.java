@@ -73,7 +73,17 @@ public class FileSystemDBManager implements DBManagerAPI {
 	 *    General DB operations
 	 *****************************/
 	
-	public void dbStructureOperation(boolean create, boolean validate) throws Exception {
+	/* verify the DataBase structure. should call this method soon as possible **/
+	public void validateDBStructure() throws Exception {
+	    LOG.debug("validating DB structure");
+	    dbStructureOperation(false, true);
+	}
+	
+	public void close() throws Exception {
+		
+	}
+	
+	private void dbStructureOperation(boolean create, boolean validate) throws Exception {
 	    try {	 
     	    Field[] fields = conf.getClass().getDeclaredFields();
     	    File file;
@@ -103,17 +113,6 @@ public class FileSystemDBManager implements DBManagerAPI {
 	    }
 	}
 	
-	/* verify the DataBase structure. should call this method soon as possible **/
-	public void validateDBStructure() throws Exception {
-	    LOG.debug("validating DB structure");
-	    dbStructureOperation(false, true);
-	}
-	
-	public void createDBStructure() throws Exception {
-	    LOG.debug("creating DB structure");
-	    dbStructureOperation(true, true);
-	}
-	
 	private void initSectionLocks() {
 		sectionLocks.put(DBSection.QUOTE_DB, new ReentrantLock());
 		sectionLocks.put(DBSection.TRADE_DB, new ReentrantLock());
@@ -137,6 +136,7 @@ public class FileSystemDBManager implements DBManagerAPI {
 	    lockCount--;
 	}
 	
+
 	
 	/*****************************  
 	 *    Stocks DB operations
@@ -249,6 +249,14 @@ public class FileSystemDBManager implements DBManagerAPI {
 			}
 		}
 		return barSeries;
+	}
+	
+	public void rewriteToQuoteDB(BarSeries barSeries) throws IOException {
+		writeToQuoteDB(barSeries, false);
+	}
+	
+	public void appendToQuoteDB(BarSeries barSeries) throws IOException {
+		writeToQuoteDB(barSeries, true);
 	}
 	
 	private void writeToQuoteDB(StockSeries stockSeries, boolean append) throws IOException {

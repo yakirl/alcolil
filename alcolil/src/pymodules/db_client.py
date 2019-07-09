@@ -44,6 +44,9 @@ class MarketStoreClient(object):
     def convert(self, interval):
         return INTERVAL_MAP[str(interval)]
 
+    def bucket(self, symbol, interval):
+        return '%s/%s/%s' % (symbol, interval, self.quoteAttributeGroup)
+
     def get_interval_and_symbol(self, barSeries):
         for bar in barSeries:
             interval, symbol = self.convert(bar.interval()), bar.symbol()
@@ -60,7 +63,7 @@ class MarketStoreClient(object):
             timestamp = quote.time().getSeconds()
             data = np.array([(pd.Timestamp(timestamp).value / 10**9, quote.open(), quote.high(), quote.low(), quote.close(), quote.volume())],
                             dtype=[('Epoch', 'i8'),('Open', 'f4'),('High', 'f4'), ('Low', 'f4'), ('Close', 'f4'), ('Volume', 'i8')])
-            self.client.write(data, '%s/%s/%s' % (symbol, interval, self.quoteAttributeGroup))
+            self.client.write(data, self.bucket(symbol, interval))
 
     def read_from_quote_db(self, symbol, interval):
         interval = self.convert(interval)
@@ -71,14 +74,17 @@ class MarketStoreClient(object):
         debug("read list: %s" % retArr)
         return retArr
 
-    '''
-    def test(self, intArr):
-        print("This is test. return list of integers")
-        javaList = ArrayList()
-        for i in intArr:
-            javaList.add(i * 2)
-        return javaList
+    def destroy(self, symbol, interval):
+        debug("Destroy quote DB: symbol %s. interval %s" % (symbol, interval))
+        self.client.destroy(self.bucket(symbol, interval))
 
-    def test2(self, obj):
-        print("open is %s" % obj.open())
-    '''
+    def clean(self):
+        for symbol in self.client.list_symbols():
+            for interval in INTERVAL_MAP.values():
+                try:
+                    self.destroy(symbol, interval)
+                except Exception as e:
+                    print(e)
+
+    def test_connection(self):
+        return self.client.list_symbols()

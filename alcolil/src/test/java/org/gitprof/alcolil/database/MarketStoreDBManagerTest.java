@@ -40,7 +40,7 @@ public class MarketStoreDBManagerTest extends SuperTestCase {
 	@Before
     public void setUp() throws Exception {
     	LOG.info("setUp test");
-    	dbManager.createDBStructure();
+    	dbManager.validateDBStructure();
     }
     
 	@After
@@ -57,7 +57,7 @@ public class MarketStoreDBManagerTest extends SuperTestCase {
     	quote = new Quote(symbol, 1.02, 3.60, 0.60, 1.43, 20500, Interval.ONE_MIN, new Time(646721399L));
     	BarSeries barSeries = new BarSeries(symbol, Interval.ONE_MIN);
     	barSeries.addQuote(quote);
-    	dbManager.writeToQuoteDB(barSeries);
+    	dbManager.appendToQuoteDB(barSeries);
     	
     	BarSeries intcOneMin = dbManager.readFromQuoteDB(symbol, Interval.ONE_MIN);
         // BarSeries intcOneMin = intcTimeSeriesInput.getBarSeries(Interval.ONE_MIN);
