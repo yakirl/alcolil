@@ -19,7 +19,7 @@ public class Executor {
         LOG.info( "Executor finished" );
     }
 
-    private void runCore(String[] args) {
+    private void runCore(String[] args) throws Exception {
 	   Core core = new Core();
 	   core.start(args);
     }

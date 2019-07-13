@@ -26,7 +26,7 @@ import org.gitprof.alcolil.common.Quote;
  *
  ***************************/
 
-public class QuoteStreamScatter implements Runnable {
+public class QuoteStreamScatter {
 	
 	public AtomicBoolean stop;
 	private QuoteQueue quoteQueue;
@@ -44,14 +44,8 @@ public class QuoteStreamScatter implements Runnable {
 		waitMillis = 100;
 	}
 	
-	@Override
-	public void run() {
-		jobExecutionLoop();
-	}
-	
-	public void startStreamingAsync() {
-		t = new Thread(this);
-		t.start();
+	public void startStreaming() {
+		jobExecutionLoop();		
 	}
 	
 	public void stop() {
@@ -90,5 +84,6 @@ public class QuoteStreamScatter implements Runnable {
 			}
 			executeJob(nextQuote);
 		}
+		executeJob((new Quote()).setEof());
 	}
 }

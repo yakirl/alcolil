@@ -20,21 +20,29 @@ import javax.swing.*;
  */
 public class GUI implements Runnable {
 
-	GController gctrlr;
+	GUIHandlers handler;
 	JFrame window;
 	JPanel container;
-	JPanel upperPanel, bottomPanel;
-	JPanel mainMenu;
-	JPanel subMenu;
-	JPanel dataSection;
-	
 	Timer refreshTimer;
 	private final static int REFRESH_TIME = 4000;
 	
-	public GUI(GController controller) {
+	public interface CandleUpdater {
+		public void update(long time, double o, double h, double l, double c, long v);
+	}
+	
+	public GUI(GUIHandlers handler) {
+		this.handler = handler;
 		initialize();
 	}
 	
+	private void initialize() {
+		setWindow("Trading System");
+		refreshTimer = new Timer(REFRESH_TIME, new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				refreshGUI();
+			}
+		});
+	}
 	
 	@Override
 	public void run() {	
@@ -46,17 +54,8 @@ public class GUI implements Runnable {
 		refreshTimer.start();
 	}
 	
-	private void initialize() {
-		setWindow("Window name");
-		refreshTimer = new Timer(REFRESH_TIME, new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					refreshGUI();
-				}
-		});
-	}
-	
 	private void refreshGUI() {
-		updateBarChart();
+		
 	}
 	
 	private void setWindow(String frameName) {
@@ -67,11 +66,10 @@ public class GUI implements Runnable {
         setContainer(window);      
         //CandlestickChart candlestickChart = new CandlestickChart();
         //frame.setContentPane(candlestickChart);   
-        setTabs(window);
-        
+          
         window.setResizable(false);
         window.pack();
-        
+        window.setLocationRelativeTo(null);      
 	}
 	
 	private void setContainer(JFrame window) {
@@ -82,77 +80,92 @@ public class GUI implements Runnable {
 	}
 	
 	private void setSubPanels(JPanel panel) {
-		upperPanel = new JPanel();
-		setMainMenu(upperPanel);
-		bottomPanel = new JPanel();
-		bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+		JPanel bottomPanel = new JPanel();
 		setBottomPanel(bottomPanel);
-		panel.add(upperPanel);
-		panel.add(bottomPanel);
+		JPanel upperPanel = new JPanel();
+		setMainMenu(upperPanel, bottomPanel);
+		panel.add(upperPanel, BorderLayout.NORTH);
+		panel.add(bottomPanel, BorderLayout.SOUTH);
 	}
 	
-	private void setMainMenu(JPanel menuPanel) {
-		mainMenu = new JPanel();
-		// add buttons
+	private void setMainMenu(JPanel menuPanel, JPanel bottomPanel) {
 		JButton backtestButton = new JButton("Backtest");
 		JButton updateDBButton = new JButton("UpdateDB");
 		backtestButton.setActionCommand("Backtest");
 		updateDBButton.setActionCommand("UpdateDB");
-		backtestButton.addActionListener(new ButtonListener());
-		updateDBButton.addActionListener(new ButtonListener());
-		mainMenu.add(backtestButton);
-		menuPanel.add(mainMenu);
-	}
-	
-	private class ButtonListener implements ActionListener {
 		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			String cmd = e.getActionCommand();
-			
-		}
-		
-	}
+		backtestButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CardLayout cardLayout = (CardLayout) bottomPanel.getLayout();
+				cardLayout.show(bottomPanel, "backtest");
+			}
+		});
+		updateDBButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CardLayout cardLayout = (CardLayout) bottomPanel.getLayout();
+				cardLayout.show(bottomPanel, "update_db");
+			}
+		});				
+		menuPanel.add(backtestButton);
+		menuPanel.add(updateDBButton);
+	}		
 	
 	private void setBottomPanel(JPanel panel) {
-		subMenu = new JPanel();
-		dataSection = new JPanel();
-		setSubMenu(subMenu);
-		setDataSection(dataSection);
+		// panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		panel.setLayout(new CardLayout());
+		JPanel backtestPanel = new JPanel();
+		setBacktestPanel(backtestPanel);
+		panel.add(backtestPanel, "backtest");
+		JPanel updateDBPanel = new JPanel();
+		setUpdateDBPanel(updateDBPanel);
+		panel.add(updateDBPanel, "update_db");
+	}
+	
+	private void setBacktestPanel(JPanel panel) {
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		
+		// DataSection - CardLayout, toggle between Chart and Input
+		JPanel dataSection = new JPanel();
+		dataSection.setLayout(new CardLayout());
+		CandlestickChart chart = new CandlestickChart("CandleChart");
+		JPanel input = new JPanel();
+		JTextField symbols = new JTextField("symbols");
+		JButton start = new JButton("Start");
+		start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {						
+				handler.backtest(true, symbols.getText(), (timeMillis, o, h, l, c, v) -> chart.addCandle(timeMillis, o, h, l, c, v));
+			}
+		});
+		input.add(symbols);
+		input.add(start);
+		dataSection.add(chart, "chart");
+		dataSection.add(input, "input");
+		
+		// SubMenu - set actions for buttons, to toggle between chart and input
+		JPanel subMenu = new JPanel();
+		subMenu.setLayout(new BoxLayout(subMenu, BoxLayout.Y_AXIS));
+		JButton runButton = new JButton("Run");
+		runButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CardLayout cardLayout = (CardLayout) dataSection.getLayout();
+				cardLayout.show(dataSection, "input");
+			}
+		});
+		JButton watchButton = new JButton("Watch");
+		watchButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CardLayout cardLayout = (CardLayout) dataSection.getLayout();
+				cardLayout.show(dataSection, "chart");
+			}
+		});
+		subMenu.add(runButton);
+		subMenu.add(watchButton);
+		
+		// Add all to backtest panel
 		panel.add(subMenu);
 		panel.add(dataSection);
 	}
 	
-	private void setSubMenu(JPanel panel) {
-		
-	}
-	
-	private void setDataSection(JPanel panel) {
-		
-	}
-	
-	private void setTabs(Container pane) {     
-        JPanel comboBoxPane = new JPanel(); //use FlowLayout
-        String comboBoxItems[] = { "buttons", "text" };
-        JComboBox<String> cb = new JComboBox<String>(comboBoxItems);
-        cb.setEditable(false); 
-        comboBoxPane.add(cb);
-        JPanel card1 = new JPanel();
-        card1.add(new JButton("Button 1"));
-        JPanel card2 = new JPanel();
-        card2.add(new JTextField("TextField", 20));
-        JPanel cards = new JPanel(new CardLayout());
-        cards.add(card1, "buttons");
-        cards.add(card2, "text");     
-        pane.add(comboBoxPane, BorderLayout.PAGE_START);
-        pane.add(cards, BorderLayout.CENTER);
-	}
-	
-	private void showCandlestickChart() {
-		
-	}
-
-	private void updateBarChart() {
-		
+	private void setUpdateDBPanel(JPanel panel) {
 	}
 }

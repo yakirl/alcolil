@@ -34,7 +34,12 @@ public class QuoteStreamScatterTest extends SuperTestCase {
         StockSeries stockSeries = FileSystemDBManager.getInstance().readFromQuoteDB(symbols, Interval.ONE_MIN);        
         QuoteQueue quoteQueue = new QuoteQueue();
         QuoteStreamScatter scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
-        scatter.run();
+        (new Thread() {
+        	@Override
+        	public void run() {
+        		scatter.startStreaming();
+        	}
+        }).start();
         Quote quote;
         int googCount = 0, msftCount = 0;
         boolean foundSomeOpen = false;

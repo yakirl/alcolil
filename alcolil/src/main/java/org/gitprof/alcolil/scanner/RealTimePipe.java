@@ -31,6 +31,11 @@ public class RealTimePipe extends BaseQuotePipe {
 	}
 
 	@Override
+	public void closePipe() {
+		
+	}
+	
+	@Override
 	public void run() {
 		startStreaming();
 	}
