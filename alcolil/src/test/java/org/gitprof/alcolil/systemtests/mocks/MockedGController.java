@@ -1,21 +1,20 @@
-package org.gitprof.alcolil.ui;
+package org.gitprof.alcolil.systemtests.mocks;
 
 import java.util.Arrays;
 
-import org.gitprof.alcolil.common.*;
-import org.gitprof.alcolil.core.Core;
+import org.gitprof.alcolil.common.Quote;
+import org.gitprof.alcolil.common.QuoteObserver;
 import org.gitprof.alcolil.core.Command;
+import org.gitprof.alcolil.core.Core;
+import org.gitprof.alcolil.ui.GUI;
+import org.gitprof.alcolil.ui.GUIHandlers;
 
-/*
- * The controller part of the MVC arch.
- */
 
-public class GController implements GUIHandlers {
-
-	Core model;
+public class MockedGController implements GUIHandlers {
+	MockedCore model;
 	GUI view;
 	
-	public GController(Core core) {
+	public MockedGController(MockedCore core) {
 		model = core;
 	}
 	
@@ -31,5 +30,5 @@ public class GController implements GUIHandlers {
 			}
 		};
 		model.postCommand(cmd);
-	}
+	}	
 }

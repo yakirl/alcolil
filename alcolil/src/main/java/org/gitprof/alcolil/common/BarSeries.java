@@ -35,23 +35,22 @@ public class BarSeries implements Iterable<Quote> {
 	private String symbol;
 	private Interval interval;
 	private List<Quote> quotes;
-	private Iterator<Quote> quoteIterator;
-	private Vector<QuoteQueue> observers;
+	private Iterator<Quote> quoteIterator;	
 	private QuoteQueue localObserver;
 	private boolean doNotModify = false;
 	
+
+	
 	public BarSeries(Interval interval) {
 		this.interval = interval;
-		quotes = new ArrayList<Quote>();
-		observers = new Vector<QuoteQueue>();
+		quotes = new ArrayList<Quote>();		
 		localObserver = new QuoteQueue();
 	}
 
 	public BarSeries(String symbol, Interval interval) {
 	    this.symbol = symbol;
         this.interval = interval;
-        quotes = new ArrayList<Quote>();
-        observers = new Vector<QuoteQueue>();
+        quotes = new ArrayList<Quote>();        
         localObserver = new QuoteQueue();
     }
 	
@@ -70,10 +69,7 @@ public class BarSeries implements Iterable<Quote> {
 	public void addQuote(Quote quote) {
 		assert doNotModify == false : "Error! attempt to modify BarSeries while under iteration!";
 		quotes.add(quote);
-		localObserver.push(quote);
-		if (observers.size() != 0) {
-			notifyObservers(quote);
-		}
+		localObserver.push(quote);		
 	}
 	
 	public Quote nextQuote() {
@@ -87,18 +83,8 @@ public class BarSeries implements Iterable<Quote> {
 	// TODO: this method is used only by UTs, remove it and handle inside UTs
 	public Quote getQuote(int ix) {
 		return quotes.get(ix);
-	}
+	}		
 	
-	void addObserver() {
-		observers.addElement(new QuoteQueue());
-	}
-	
-	void notifyObservers(Quote quote) {		
-		for (QuoteQueue observer : observers) {
-			observer.push(quote);
-		}
-	}
-
 	@Override
 	public Iterator<Quote> iterator() {
 		doNotModify = true;

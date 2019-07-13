@@ -1,16 +1,12 @@
 package org.gitprof.alcolil.ui;
 
-import java.util.List;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.swing.JPanel;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -31,31 +27,20 @@ import org.jfree.data.time.ohlc.OHLCSeriesCollection;
 import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 
-public class CandlestickChart extends BaseChart {
 
+public class CandlestickChart extends BaseChart {
+	
+	private static final long serialVersionUID = 6294689542092367723L;
 	private static final DateFormat READABLE_TIME_FORMAT = new SimpleDateFormat("kk:mm:ss");
 
 	private OHLCSeries ohlcSeries;
 	private TimeSeries volumeSeries;
 
-	private static final int MIN = 60000;
-	// Every minute
-	private int timeInterval = 1;
-	//private Trade candelChartIntervalFirstPrint = null;
-	private double open = 0.0;
-	private double close = 0.0;
-	private double low = 0.0;
-	private double high = 0.0;
-	private long volume = 0;
+	private static final int MIN = 60000; 
 
 	public CandlestickChart(String title) {
-	
+		createCandlestickChart(title);
 	}
-	
-	public CandlestickChart() {
-		
-	}
-
 	
 	@SuppressWarnings("serial")
 	public class CustomHighLowItemLabelGenerator extends HighLowItemLabelGenerator {
@@ -109,16 +94,22 @@ public class CandlestickChart extends BaseChart {
 	}
 	
 	public void createCandlestickChart(String title) {
-	// Create new chart
-	final JFreeChart candlestickChart = fillCandlestickChart(title);
-	// Create new chart panel
-	final ChartPanel chartPanel = new ChartPanel(candlestickChart);
-	chartPanel.setPreferredSize(new java.awt.Dimension(1200, 500));
-	// Enable zooming
-	chartPanel.setMouseZoomable(true);
-	chartPanel.setMouseWheelEnabled(true);
-	//add(chartPanel, BorderLayout.CENTER);
+		// Create new chart
+		final JFreeChart candlestickChart = fillCandlestickChart(title);
+		// Create new chart panel
+		final ChartPanel chartPanel = new ChartPanel(candlestickChart);
+		chartPanel.setPreferredSize(new java.awt.Dimension(1200, 500));
+		// Enable zooming
+		chartPanel.setMouseZoomable(true);
+		chartPanel.setMouseWheelEnabled(true);
+		add(chartPanel, BorderLayout.CENTER);
 	}
+	
+    public void addCandle(long timeMillis, double o, double h, double l, double c, long v) {        
+        FixedMillisecond t = new FixedMillisecond(timeMillis);
+        ohlcSeries.add(t, o, h, l, c);
+        volumeSeries.add(t, v);     
+    }
 	
 	private void fillCandlesticks(OHLCSeries ohlcSeries) {
 		// For loop candles
@@ -127,8 +118,7 @@ public class CandlestickChart extends BaseChart {
 	
 	private void fillVolumes(TimeSeries volumeSeries) {
 		// for volumes
-		// do: volumeSeries.add(t, v);
-		
+		// do: volumeSeries.add(t, v);		
 	}
 	
 	private JFreeChart fillCandlestickChart(String chartTitle) {

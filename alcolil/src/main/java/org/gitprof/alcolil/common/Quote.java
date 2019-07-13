@@ -62,8 +62,9 @@ public class Quote implements CSVable {
 		
 	}
 	
-	public void setEof() {
+	public Quote setEof() {
 		eof = true;
+		return this;
 	}
 	
 	public boolean eof() {

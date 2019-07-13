@@ -30,24 +30,20 @@ public abstract class BaseQuotePipe implements Runnable {
 
 	FetcherAPI fetcher;
 	QuoteQueue quoteQueue;
-	AtomicBoolean closePipe;
 	
 	public BaseQuotePipe(FetcherAPI fetcher) {
-		this.fetcher = fetcher;
-	    closePipe = new AtomicBoolean();
-		closePipe.set(false);
+		this.fetcher = fetcher;	  
 	}
 	
-	public void closePipe() {
-		closePipe.set(true);
-	}
+	public abstract void closePipe();
 	
 	public abstract void run();
 		
 	/*
 	 * this method is used for getting any next quote - daily/intraday, history/realtime
+	 * Always return a non-null quote, or throws exception
 	 */
-	public Quote getNextQuote() {
+	public Quote getNextQuote() throws Exception {
 		Quote nextQuote = quoteQueue.pop();
 		return nextQuote;
 	}

@@ -1,8 +1,12 @@
 package org.gitprof.alcolil.scanner;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.HashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.scanner.BaseQuotePipe;
@@ -14,23 +18,24 @@ import org.gitprof.alcolil.marketdata.FetcherAPI;
  * *) scan collection of stocks, for one given interval graph, in a session
  * *) no option to reset scanner. to start a new scan - destroy and reconstruct 
  */
-public class CoreScanner implements Runnable {
+public class CoreScanner {
+	
+	protected static final Logger LOG = LogManager.getLogger(CoreScanner.class);
 	
 	private DBManagerAPI dbManager;
 	private FetcherAPI fetcher;
-	private List<String> symbols;
 	private Map<String, BaseAnalyzer> analyzers;
+	private Map<String, QuoteObserver> observers;
 	private Thread quotePipeThread;
 	private BaseQuotePipe quotePipe = null;
-	private Interval interval;
-	private Time start = null;
-	private Time stop = null;
-	private ScannerMode mode;
+	private AtomicBoolean stop;
+	private Object sleeper;
+	private boolean debug;
 	private int WAIT_FOR_PIPE_TIMEOUT_MILLIS = 10000;
 		
 	public CoreScanner(DBManagerAPI dbManager, FetcherAPI fetcher) {	
 	    this.fetcher = fetcher;
-		this.dbManager = dbManager;
+		this.dbManager = dbManager;		
         initializeAnalyzers();
 	}
 	
@@ -52,7 +57,7 @@ public class CoreScanner implements Runnable {
 	 * The QuotePipe runs on its own thread.
 	 * 
 	 */
-	private void setQuotePipe(ScannerMode mode, Interval interval, Time from, Time to) {
+	private void setQuotePipe(ScannerMode mode, List<String> symbols, Interval interval, Time from, Time to) {
 		if (ScannerMode.REALTIME == mode) {
 			quotePipe = new RealTimePipe(fetcher, symbols, from);
 		} else { // BACKTEST
@@ -60,34 +65,55 @@ public class CoreScanner implements Runnable {
 		}
 		quotePipeThread = new Thread(quotePipe);
 		quotePipeThread.start(); // return immediately
-		//quotePipe.startQuoteStreaming(); //return immediately
 	}
 	
-	public void stop() {
-		
+	public synchronized void stop() {
+		sleeper.notify();
+		stop.set(true);
 	}
 	
-	public void backtest(List<String> symbols, Interval interval, Time start, Time stop) {
-		setQuotePipe(ScannerMode.BACKTEST, interval, start, stop);
+	public synchronized void waitForStop() {
+		if (debug) {
+			try {
+				sleeper.wait();
+			} catch(InterruptedException e) {}
+		}
+	}
+	
+	public void backtest(List<String> symbols, Interval interval, Time from, Time to, boolean debug, Map<String, QuoteObserver> observers) {
+		LOG.info("Starting backtest. debug=%s", debug);
+		setQuotePipe(ScannerMode.BACKTEST, symbols, interval, from, to);
+		this.observers = observers != null ? observers : new HashMap<String, QuoteObserver>();		
 		mainLoop();
 	}
 	
 	public void realtime(List<String> symbols, Interval interval) {
-		setQuotePipe(ScannerMode.REALTIME, interval, null, null);
+		setQuotePipe(ScannerMode.REALTIME, symbols, interval, null, null);
 		mainLoop();
 	}
 	
 	
 	private void mainLoop() {
-		Quote quote;
+		Quote quote = null;
 		BaseAnalyzer analyzer;
+		QuoteObserver obs;
 		while(true) {
-			quote = quotePipe.getNextQuote();
-			if (quote.eof())
+			try {
+				quote = quotePipe.getNextQuote();
+			} catch (Exception e) {
+				LOG.error("mainLoop: failed to retrieve next quote from pipe", e);
+			}
+			if (quote.eof()) {
+				waitForStop();
 				break;
+			}
 			analyzer = analyzers.get(quote.symbol());
 			analyzer.updateNextQuote(quote);
-			if ((null != stop) && stop.before(quote.time())) {
+			obs = observers.get(quote.symbol());
+			if (obs != null) {
+				obs.observe(quote);
+			}			
+			if (stop.get()) {
 				break;
 			}
 		}
@@ -100,17 +126,5 @@ public class CoreScanner implements Runnable {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-	
-	@Override
-	public void run() {
-		if (ScannerMode.BACKTEST == mode) {
-		    return;
-			//backtest();
-		} else { // REALTIME
-		    return;
-			//realtime();
-		}
-		
 	}
 }

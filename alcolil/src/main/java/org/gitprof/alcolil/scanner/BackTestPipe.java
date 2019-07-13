@@ -34,6 +34,7 @@ public class BackTestPipe extends BaseQuotePipe {
 	Time stop = null;
 	DBManagerAPI dbManager;
 	PipeSource pipeSource;
+	QuoteStreamScatter scatter;
 	
 	public enum PipeSource {
 		LOCAL, REMOTE
@@ -82,13 +83,18 @@ public class BackTestPipe extends BaseQuotePipe {
 	private void startStreamingFromLocalDB() throws Exception {
 		try {
 			StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
-			quoteQueue = new QuoteQueue();
-			QuoteStreamScatter quoteStreamScatter = new QuoteStreamScatter(quoteQueue, stockSeries);
-			quoteStreamScatter.startStreamingAsync();
+			quoteQueue = new QuoteQueue(300);
+			scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
+			scatter.startStreaming();
 		} catch (IOException e) {
 			e.printStackTrace();
 			closePipe();
 		}
+	}
+	
+	@Override
+	public void closePipe() {
+		scatter.stop();
 	}
 	
 	@Override
