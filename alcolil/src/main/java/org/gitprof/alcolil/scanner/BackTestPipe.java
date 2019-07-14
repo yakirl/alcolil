@@ -83,7 +83,7 @@ public class BackTestPipe extends BaseQuotePipe {
 	private void startStreamingFromLocalDB() throws Exception {
 		try {
 			StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
-			quoteQueue = new QuoteQueue();
+			quoteQueue = new QuoteQueue(300);
 			scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
 			scatter.startStreaming();
 		} catch (IOException e) {

@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.database.DBManagerAPI;
 import org.gitprof.alcolil.scanner.BaseQuotePipe;
@@ -17,6 +19,8 @@ import org.gitprof.alcolil.marketdata.FetcherAPI;
  * *) no option to reset scanner. to start a new scan - destroy and reconstruct 
  */
 public class CoreScanner {
+	
+	protected static final Logger LOG = LogManager.getLogger(CoreScanner.class);
 	
 	private DBManagerAPI dbManager;
 	private FetcherAPI fetcher;
@@ -77,6 +81,7 @@ public class CoreScanner {
 	}
 	
 	public void backtest(List<String> symbols, Interval interval, Time from, Time to, boolean debug, Map<String, QuoteObserver> observers) {
+		LOG.info("Starting backtest. debug=%s", debug);
 		setQuotePipe(ScannerMode.BACKTEST, symbols, interval, from, to);
 		this.observers = observers != null ? observers : new HashMap<String, QuoteObserver>();		
 		mainLoop();
@@ -89,11 +94,15 @@ public class CoreScanner {
 	
 	
 	private void mainLoop() {
-		Quote quote;
+		Quote quote = null;
 		BaseAnalyzer analyzer;
 		QuoteObserver obs;
 		while(true) {
-			quote = quotePipe.getNextQuote();
+			try {
+				quote = quotePipe.getNextQuote();
+			} catch (Exception e) {
+				LOG.error("mainLoop: failed to retrieve next quote from pipe", e);
+			}
 			if (quote.eof()) {
 				waitForStop();
 				break;

@@ -9,6 +9,7 @@ import org.gitprof.alcolil.common.Quote;
 import org.gitprof.alcolil.common.QuoteObserver;
 import org.gitprof.alcolil.core.Command;
 import org.gitprof.alcolil.core.Core;
+import org.gitprof.alcolil.core.Executor;
 // import org.gitprof.alcolil.common.*;
 import org.gitprof.alcolil.systemtests.BaseTestScenario;
 import org.gitprof.alcolil.systemtests.mocks.*;
@@ -29,7 +30,7 @@ import org.junit.Test;
 
 public class ManualGUITest extends BaseTestScenario {
 	
-	@Test
+	// @Test
 	public void testBasic() throws Exception {
 		// MockedCore core = new MockedCore();
 		
@@ -37,7 +38,7 @@ public class ManualGUITest extends BaseTestScenario {
 		// Thread.sleep(100000);
 	}
 	
-	@Test
+	// @Test
 	public void testBacktestBasic() {
 		MockedCore core = new MockedCore();
 		MockedGController gcontroller = new MockedGController(core);
@@ -47,5 +48,17 @@ public class ManualGUITest extends BaseTestScenario {
 				(new GUI(gcontroller)).showGUI();
 			}
 		});		
+	}
+	
+	@Test
+	public void testBacktest() throws Exception {
+		Thread t = new Thread() {
+			public void run() {
+				String arr[] = {"s"};
+				Executor.main(arr);
+			}
+		};
+		t.start();
+		t.join();		
 	}
 }

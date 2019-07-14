@@ -41,8 +41,9 @@ public abstract class BaseQuotePipe implements Runnable {
 		
 	/*
 	 * this method is used for getting any next quote - daily/intraday, history/realtime
+	 * Always return a non-null quote, or throws exception
 	 */
-	public Quote getNextQuote() {
+	public Quote getNextQuote() throws Exception {
 		Quote nextQuote = quoteQueue.pop();
 		return nextQuote;
 	}

@@ -2,7 +2,6 @@ package org.gitprof.alcolil.core;
 
 import java.io.IOException;
 import java.lang.Thread;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +11,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.gitprof.alcolil.scanner.BackTester;
 import org.gitprof.alcolil.scanner.BackTestPipe;
-import org.gitprof.alcolil.scanner.RealTimeScanner;
 import org.gitprof.alcolil.ui.UserInterface;
 import org.gitprof.alcolil.stats.StatsCalculator;
 import org.gitprof.alcolil.scanner.ParamOptimizer;
