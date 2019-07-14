@@ -101,6 +101,11 @@
     <version>3.9.2</version>
     <scope>test</scope>
    </dependency>
+   <dependency>
+	<groupId>pl.zankowski</groupId>
+	<artifactId>iextrading4j-all</artifactId>
+	<version>3.2.3</version>
+   </dependency>
   </dependencies>
   <build>
   	<plugins>
