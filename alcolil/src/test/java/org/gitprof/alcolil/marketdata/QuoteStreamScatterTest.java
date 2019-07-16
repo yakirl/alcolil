@@ -32,7 +32,7 @@ public class QuoteStreamScatterTest extends SuperTestCase {
         symbols.add("MSFT_EXAMPLE");
         // TODO: remove dbManager dependency
         StockSeries stockSeries = FileSystemDBManager.getInstance().readFromQuoteDB(symbols, Interval.ONE_MIN);        
-        QuoteQueue quoteQueue = new QuoteQueue();
+        QuoteQueue quoteQueue = new QuoteQueue(300);
         QuoteStreamScatter scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
         (new Thread() {
         	@Override

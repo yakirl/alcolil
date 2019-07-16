@@ -9,6 +9,8 @@ import org.gitprof.alcolil.common.*;
 /*
  * Simple implementation for Queue of quotes that set max timeout waiting for quote to
  * 	be pushed. since we always assume that the producer should end the streaming with Quote.eof() set.
+ * 
+ *  LinkedBlockingQueue is a thread-safe, blocking on operations, queue implementation
  */
 public class QuoteQueue {
 
