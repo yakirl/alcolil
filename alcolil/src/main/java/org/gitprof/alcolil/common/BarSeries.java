@@ -20,7 +20,7 @@ import org.gitprof.alcolil.marketdata.QuoteQueue;
  *  the class operates in one of 2 modes:
  *  1. insertion mode: 
  *   a. addQuote() quotes are inserted one by one into a queue:
- *   	- goes to local observer and user-registered observers
+ *   	- goes to local queue
  *      - inserted to quote list
  *   b. nextQuote() return the oldest quote in the queue, from the local observer
  *  2. iteration mode:
@@ -34,24 +34,22 @@ public class BarSeries implements Iterable<Quote> {
     protected static final Logger LOG = LogManager.getLogger(BarSeries.class);
 	private String symbol;
 	private Interval interval;
-	private List<Quote> quotes;
-	private Iterator<Quote> quoteIterator;	
+	private List<Quote> quotes;	
 	private QuoteQueue localObserver;
 	private boolean doNotModify = false;
 	
-
 	
 	public BarSeries(Interval interval) {
 		this.interval = interval;
 		quotes = new ArrayList<Quote>();		
-		localObserver = new QuoteQueue();
+		localObserver = new QuoteQueue(300);
 	}
 
 	public BarSeries(String symbol, Interval interval) {
 	    this.symbol = symbol;
         this.interval = interval;
         quotes = new ArrayList<Quote>();        
-        localObserver = new QuoteQueue();
+        localObserver = new QuoteQueue(300);
     }
 	
 	public String getSymbol() {
@@ -72,7 +70,7 @@ public class BarSeries implements Iterable<Quote> {
 		localObserver.push(quote);		
 	}
 	
-	public Quote nextQuote() {
+	public Quote nextQuote() throws Exception {
 		return localObserver.pop();
 	}
 	

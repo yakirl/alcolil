@@ -55,6 +55,10 @@ public class Core
 	public Core() throws Exception {
 		dbManager = IntegratedDBManager.getInstance();
 		waitingCommand = new AtomicReference<Command>();
+		resetWaitingCmd();
+	}
+	
+	public void resetWaitingCmd() {
 		waitingCommand.set(new Command(Command.Opcode.DO_NOTHING));
 	}
 	
@@ -86,7 +90,7 @@ public class Core
     	Command cmd = waitingCommand.get();
     	LOG.info("Core dispatching command: " + cmd.opcode);
     	if (Command.Opcode.BACKTEST == cmd.opcode) {
-    		backtest(cmd.from, cmd.to);
+    		backtest(cmd);
     	} else if (Command.Opcode.REALTIME == cmd.opcode) {
     		realTimeScanStart();
     	} else if (Command.Opcode.UPDATE_DB == cmd.opcode) {
@@ -96,6 +100,7 @@ public class Core
     	} else {
     		LOG.error("found unrecognized command!");
     	}
+    	resetWaitingCmd();
     }
     
     private void mainLoop() {
@@ -125,13 +130,15 @@ public class Core
      *  5. run parameter optimizer 
      ****************************/
 
-    private void backtest(Time from, Time to) throws IOException {
-    	List<String> symbols = dbManager.getStockCollection().getSymbols();
-    	Interval interval = Interval.ONE_MIN;
+    private void backtest(Command cmd) throws IOException {
+    	List<String> symbols = cmd.symbols;
+    	Interval interval = cmd.interval;
     	BackTester backTester = new BackTester(dbManager, null);
+    	HashMap<String, QuoteObserver> observers = new HashMap<String, QuoteObserver>();
+    	observers.put(cmd.symbolToObserve, cmd.observer);
     	Thread t = new Thread() {
     		public void run() {
-    			backTester.backtest(symbols, interval, from, to, true, new HashMap<String, QuoteObserver>());
+    			backTester.backtest(symbols, interval, cmd.from, cmd.to, true, observers);
     		}
     	};
     	t.start();

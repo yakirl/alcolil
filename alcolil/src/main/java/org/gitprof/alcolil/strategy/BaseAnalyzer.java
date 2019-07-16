@@ -1,8 +1,6 @@
 package org.gitprof.alcolil.strategy;
 
-import java.util.Map;
 import java.util.Vector;
-
 
 import org.gitprof.alcolil.account.AlertingSystem;
 import org.gitprof.alcolil.common.*;

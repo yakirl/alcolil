@@ -2,13 +2,13 @@ package org.gitprof.alcolil.marketdata;
 
 import java.lang.Thread;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.gitprof.alcolil.common.StockSeries;
+import org.gitprof.alcolil.core.Core;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.gitprof.alcolil.common.BarSeries;
 import org.gitprof.alcolil.common.Quote;
 
@@ -16,7 +16,7 @@ import org.gitprof.alcolil.common.Quote;
  *   QuoteStreamScatter
  *   
  *   The component is used mainly for backtest.
- *   It runs on its own thread, holds a list of barSeries and a QuoteQueue, and every iteration choose a barSeries, pop quote from it
+ *   It holds a list of barSeries and a QuoteQueue, and every iteration choose a barSeries, pop quote from it
  *   	and publish to QuoteQueue.
  *   
  *   Usage:
@@ -28,6 +28,7 @@ import org.gitprof.alcolil.common.Quote;
 
 public class QuoteStreamScatter {
 	
+	protected static final Logger LOG = LogManager.getLogger(Core.class);
 	public AtomicBoolean stop;
 	private QuoteQueue quoteQueue;
 	// TODO: currently we access to jobs via 2 threads - need to synchronize it or use HashTable
@@ -75,14 +76,18 @@ public class QuoteStreamScatter {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			symbol = jobs.getSymbolList().get(new Random().nextInt(jobs.size()));
-			barSeries = jobs.getBarSeries(symbol);
-			nextQuote = barSeries.nextQuote();
-			if (null == nextQuote) {
-				removeEmptyJobLine(symbol);
-				continue;
+			try {
+				symbol = jobs.getSymbolList().get(new Random().nextInt(jobs.size()));
+				barSeries = jobs.getBarSeries(symbol);
+				nextQuote = barSeries.nextQuote();
+				if (null == nextQuote) {
+					removeEmptyJobLine(symbol);
+					continue;
+				}
+				executeJob(nextQuote);
+			} catch (Exception e) {
+				LOG.error("Failed to post quote", e);
 			}
-			executeJob(nextQuote);
 		}
 		executeJob((new Quote()).setEof());
 	}

@@ -39,7 +39,7 @@ public class BarSeriesTest extends SuperTestCase {
     }
     
     @Test
-    public void testBarSeriesIteration() {
+    public void testBarSeriesIteration() throws Exception {
         String symbol = "EXAMPLE";
         BarSeries barSeries1 = new BarSeries(symbol, Interval.ONE_MIN);
         barSeries1.addQuote(new Quote(symbol, 5.34, 7.7, 3.4, 4.0, 1200L, Interval.ONE_MIN, new Time(7407360L)));

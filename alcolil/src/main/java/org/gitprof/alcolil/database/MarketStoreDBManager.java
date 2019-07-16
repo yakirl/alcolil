@@ -1,13 +1,8 @@
 package org.gitprof.alcolil.database;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.lang.Iterable;
-import java.lang.reflect.*;
-// import java.util.Collections.UnmodifiableList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.gitprof.alcolil.common.*;
@@ -19,7 +14,9 @@ import org.gitprof.alcolil.common.*;
  * This class make use of Jep in order to invoke the python client of marketstore.
  * Jep uses python sub interpreter. Every Jep instantiation uses different interpreter, and should be used only by the same thread, and be 
  * 	closed when finished.
- * Thus we instantiate new object for every db usage.
+ * To solve this, we instantiate new jep object every operation. this method is bad in aspect of performance, and other methods should be considered in future
+ * 	such as saving mapping: ThreadID -> JepInstance, which also require to handle closure of those jep instances, when this DBManager object no longer used. 
+ *  
  * The synchronized access to the DB itself - marketstore - should handled internally (I should check this is the case actually :)) 
  */
 
@@ -27,9 +24,9 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	private static final String DB_CONN_STRING_ENV = "DB_CONN_STRING";
 	protected static final Logger LOG = LogManager.getLogger(MarketStoreDBManager.class);
 	protected Conf conf;
-	private jep.Jep jep;
+	// private jep.Jep jep;
 	
-	public MarketStoreDBManager() throws jep.JepException {
+	public MarketStoreDBManager() {
 		String dbConnString = System.getenv(DB_CONN_STRING_ENV);
 		if (dbConnString != null) {
 			LOG.debug("db conn string set to " + dbConnString);
@@ -37,17 +34,20 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		} else {
 			LOG.debug("db conn string isnt set, using default");
 			conf = new Conf();
-		}
-		initJep();
+		}		
 	}
 	
-	private void initJep() throws jep.JepException {
-		jep = new jep.Jep();
-		jep.eval("import sys");
-        jep.set("srcDir", conf.srcDir());
-        jep.eval("sys.path.append(srcDir)");
-        jep.eval("from pymodules import db_client");
-        jep.eval("client = db_client.MarketStoreClient()");
+	private jep.Jep initJep() throws jep.JepException {
+		jep.Jep _jep = new jep.Jep(new jep.JepConfig().addSharedModules("numpy", "pandas"));
+		// jep.Jep _jep =  new jep.Jep();
+		LOG.info("initJep: Thread=" + Thread.currentThread().getId());
+		// jep.
+		_jep.eval("import sys");
+        _jep.set("srcDir", conf.srcDir());
+        _jep.eval("sys.path.append(srcDir)");
+        _jep.eval("from pymodules import db_client");
+        _jep.eval("client = db_client.MarketStoreClient()");
+        return _jep;
 	}
 	
 	public static synchronized DBManagerAPI getInstance() throws jep.JepException {
@@ -57,11 +57,13 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 	
 	public void validateDBStructure() throws Exception {
-		jep.invoke("client.test_connection");
+		jep.Jep _jep = initJep();
+		_jep.invoke("client.test_connection");
+		_jep.close();
 	}
 	
 	public void close() throws jep.JepException {
-		jep.close();
+		// jep.close();
 	}
 	
 	public StockCollection getStockCollection() throws IOException {
@@ -107,8 +109,9 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 	
 	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws jep.JepException {
-		        
-        Object res = jep.invoke("client.read_from_quote_db", symbol, interval.name());                                       
+		jep.Jep jep = initJep();
+        Object res = jep.invoke("client.read_from_quote_db", symbol, interval.name());
+        jep.close();
         return convertPyResToBarSeries(symbol, interval, res);
 	}
 	
@@ -118,13 +121,15 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	
 	public void appendToQuoteDB(BarSeries barSeries) throws jep.JepException { 
 		LOG.info("appending to quote DB. num quotes =" + barSeries.size());
+		jep.Jep jep = initJep();
         jep.set("obj", barSeries);
-        jep.eval("client.write_to_quote_db(obj)");        
+        jep.eval("client.write_to_quote_db(obj)");
+        jep.close();
 	}
 	
 	private BarSeries convertPyResToBarSeries(String symbol, Interval interval, Object pyBarSeries) {
 		Integer x = new Integer(8);
-		long y = x.longValue();
+		// long y = x.longValue();
 		BarSeries barSeries = new BarSeries(symbol, interval);
 		List<Object> quoteRaw;
 		for (Object obj: (ArrayList<Object>) pyBarSeries) {

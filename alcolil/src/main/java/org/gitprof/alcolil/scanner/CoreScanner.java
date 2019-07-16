@@ -24,7 +24,7 @@ public class CoreScanner {
 	
 	private DBManagerAPI dbManager;
 	private FetcherAPI fetcher;
-	private Map<String, BaseAnalyzer> analyzers;
+	//private Map<String, BaseAnalyzer> analyzers;
 	private Map<String, QuoteObserver> observers;
 	private Thread quotePipeThread;
 	private BaseQuotePipe quotePipe = null;
@@ -57,7 +57,7 @@ public class CoreScanner {
 	 * The QuotePipe runs on its own thread.
 	 * 
 	 */
-	private void setQuotePipe(ScannerMode mode, List<String> symbols, Interval interval, Time from, Time to) {
+	private void setQuotePipe(ScannerMode mode, List<String> symbols, Interval interval, Time from, Time to) throws Exception {
 		if (ScannerMode.REALTIME == mode) {
 			quotePipe = new RealTimePipe(fetcher, symbols, from);
 		} else { // BACKTEST
@@ -81,34 +81,44 @@ public class CoreScanner {
 	}
 	
 	public void backtest(List<String> symbols, Interval interval, Time from, Time to, boolean debug, Map<String, QuoteObserver> observers) {
-		LOG.info("Starting backtest. debug=%s", debug);
-		setQuotePipe(ScannerMode.BACKTEST, symbols, interval, from, to);
-		this.observers = observers != null ? observers : new HashMap<String, QuoteObserver>();		
+		try {
+			LOG.info("Starting backtest. debug=" + String.valueOf(debug));
+			setQuotePipe(ScannerMode.BACKTEST, symbols, interval, from, to);
+			this.observers = observers != null ? observers : new HashMap<String, QuoteObserver>();
+		} catch (Exception e) {
+			LOG.error("failed to initialize backtest mode", e);
+			return;
+		}
 		mainLoop();
 	}
 	
 	public void realtime(List<String> symbols, Interval interval) {
-		setQuotePipe(ScannerMode.REALTIME, symbols, interval, null, null);
+		try {
+			setQuotePipe(ScannerMode.REALTIME, symbols, interval, null, null);
+		} catch (Exception e) {
+			//TODO
+		}
 		mainLoop();
 	}
 	
 	
 	private void mainLoop() {
 		Quote quote = null;
-		BaseAnalyzer analyzer;
+		//BaseAnalyzer analyzer;
 		QuoteObserver obs;
 		while(true) {
 			try {
 				quote = quotePipe.getNextQuote();
 			} catch (Exception e) {
 				LOG.error("mainLoop: failed to retrieve next quote from pipe", e);
+				break;
 			}
 			if (quote.eof()) {
 				waitForStop();
 				break;
 			}
-			analyzer = analyzers.get(quote.symbol());
-			analyzer.updateNextQuote(quote);
+			//analyzer = analyzers.get(quote.symbol());
+			//analyzer.updateNextQuote(quote);
 			obs = observers.get(quote.symbol());
 			if (obs != null) {
 				obs.observe(quote);
@@ -122,6 +132,7 @@ public class CoreScanner {
 
 	private void close() {
 		try {
+			quotePipe.closePipe();
 			quotePipeThread.join(WAIT_FOR_PIPE_TIMEOUT_MILLIS);
 		} catch (Exception e) {
 			e.printStackTrace();

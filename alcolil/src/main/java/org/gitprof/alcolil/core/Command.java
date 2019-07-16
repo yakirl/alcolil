@@ -7,11 +7,11 @@ import org.gitprof.alcolil.common.*;
 
 public class Command {
 
-	public Opcode opcode; // DO_NOTHING, RUN_BACKTEST, START_REALTIME, STOP_REALTIME, OPTIMIZE, UPDATE_DB,
+	public Opcode opcode;
 	public boolean startStop;
 	public Time from;
 	public Time to;
-	public Interval intetrval;
+	public Interval interval;
 	public List<String> symbols;
 	public boolean debug;
 	public QuoteObserver observer;

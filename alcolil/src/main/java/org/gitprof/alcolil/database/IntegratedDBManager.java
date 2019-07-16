@@ -29,10 +29,6 @@ public class IntegratedDBManager implements DBManagerAPI {
 	}
 	
 	public void validateDBStructure() throws Exception {
-		
-	}
-	
-	public void createDBStructure() throws Exception {
 		fs.validateDBStructure();
 		ms.validateDBStructure();
 	}

@@ -24,6 +24,8 @@ public class GController implements GUIHandlers {
 		Command cmd = new Command(Command.Opcode.BACKTEST);
 		cmd.startStop = true;
 		cmd.symbols = Arrays.asList(symbolsCSV.split("\\s*,\\s*"));
+		cmd.symbolToObserve = cmd.symbols.get(0);
+		cmd.interval = Interval.ONE_MIN;
 		cmd.observer = new QuoteObserver() {
 			public void observe(Quote quote) {
 				updater.update(quote.time().getSeconds(), quote.open().doubleValue(), quote.high().doubleValue(),
