@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,45 +52,12 @@ public class MarketStoreDBManagerTest extends SuperTestCase {
     	LOG.info("tearDown test");
     	// dbManager.close();
     }   	
-	
-    @Test
-	public void testJepSanity() throws Exception {
-		inner();
-		
-		Thread t = new Thread() {
-			public void run() {
-				inner();
-			}
-		};
-		//t.start();
-		//t.join();
-		
-		inner();
-	}
-	
-    private void inner() {
-    	try {
-    		jep.Jep _jep;
-	    	_jep = new jep.Jep(new jep.JepConfig().addSharedModules("numpy", "pandas"));
-	    	// jep.Jep _jep = new jep.Jep();
-			_jep.set("srcDir", conf.srcDir());
-			_jep.eval("import sys");
-	        _jep.eval("sys.path.append(srcDir)");
-			//_jep.eval("from pymodules import test");
-			_jep.eval("from pymodules import db_client");
-			_jep.eval("client = db_client.MarketStoreClient()");
-			_jep.invoke("client.test_connection");
-			_jep.close();
-    	} catch(Exception e) {
-    		LOG.error("failed", e);
-    	}
-    }
     
-  //   @Test
+    @Test
     public void testReadWriteTimeSeriesToQuoteDB() throws Exception {
     	//TimeSeries intcTimeSeries = new TimeSeries("INTC");
     	Quote quote;
-    	String symbol = "AMD";
+    	String symbol = RandomStringUtils.random(4, true, false);
     	quote = new Quote(symbol, 1.02, 3.60, 0.60, 1.43, 20500, Interval.ONE_MIN, new Time(646721399L));
     	BarSeries barSeries = new BarSeries(symbol, Interval.ONE_MIN);
     	barSeries.addQuote(quote);

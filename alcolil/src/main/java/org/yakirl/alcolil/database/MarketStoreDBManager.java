@@ -3,28 +3,37 @@ package org.yakirl.alcolil.database;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.yakirl.alcolil.common.*;
 
+import org.yakirl.marketstore.JClient;
+import org.yakirl.marketstore.requests.*;
+import org.yakirl.marketstore.responses.*;
+
 /********
  * 
  * @author yakir
+ * 
+ * Data in MS sits in the same order of Quote: Open, High, Low, Close, Volume, Time
  *
- * This class make use of Jep in order to invoke the python client of marketstore.
- * Jep uses python sub interpreter. Every Jep instantiation uses different interpreter, and should be used only by the same thread, and be 
- * 	closed when finished.
- * To solve this, we instantiate new jep object every operation. this method is bad in aspect of performance, and other methods should be considered in future
- * 	such as saving mapping: ThreadID -> JepInstance, which also require to handle closure of those jep instances, when this DBManager object no longer used. 
  *  
- * The synchronized access to the DB itself - marketstore - should handled internally (I should check this is the case actually :)) 
  */
 
 public class MarketStoreDBManager implements DBManagerAPI {
 	private static final String DB_CONN_STRING_ENV = "DB_CONN_STRING";
 	protected static final Logger LOG = LogManager.getLogger(MarketStoreDBManager.class);
+	private JClient client;
 	protected Conf conf;
-	// private jep.Jep jep;
+	
+	private Map<String, String> intervalConverter = new HashMap<String, String>() {{
+		put(Interval.ONE_MIN.toString(), "1Min");		
+	}};
+	
+	private String attrGroup;
 	
 	public MarketStoreDBManager() {
 		String dbConnString = System.getenv(DB_CONN_STRING_ENV);
@@ -34,36 +43,30 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		} else {
 			LOG.debug("db conn string isnt set, using default");
 			conf = new Conf();
-		}		
-	}
+		}
+		client = new JClient();
+		attrGroup = "OHLCV";
+	}	
 	
-	private jep.Jep initJep() throws jep.JepException {
-		jep.Jep _jep = new jep.Jep(new jep.JepConfig().addSharedModules("numpy", "pandas"));
-		// jep.Jep _jep =  new jep.Jep();
-		LOG.info("initJep: Thread=" + Thread.currentThread().getId());
-		// jep.
-		_jep.eval("import sys");
-        _jep.set("srcDir", conf.srcDir());
-        _jep.eval("sys.path.append(srcDir)");
-        _jep.eval("from pymodules import db_client");
-        _jep.eval("client = db_client.MarketStoreClient()");
-        return _jep;
-	}
-	
-	public static synchronized DBManagerAPI getInstance() throws jep.JepException {
+	public static synchronized DBManagerAPI getInstance() {
 		LOG.info("Initializing MarkStore DB Manager");
 		DBManagerAPI dbManager = new MarketStoreDBManager();
 		return dbManager;	
 	}
 	
 	public void validateDBStructure() throws Exception {
-		jep.Jep _jep = initJep();
-		_jep.invoke("client.test_connection");
-		_jep.close();
+	
 	}
 	
-	public void close() throws jep.JepException {
-		// jep.close();
+	public void close() {
+	}
+	
+	private String convertInterval(Interval interval) throws DBException {
+		String msInterval = intervalConverter.get(interval.toString());
+		if (msInterval == null) {
+			throw new DBException(String.format("unsupported interval %s", interval.toString()));
+		}
+		return msInterval;
 	}
 	
 	public StockCollection getStockCollection() throws IOException {
@@ -75,7 +78,7 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		
 	}
 
-	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws jep.JepException {
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws DBException {
 		StockSeries stockSeries = new StockSeries(Interval.ONE_MIN);
 		BarSeries barSeries;
 		for (String symbol: symbols) {
@@ -89,7 +92,7 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		
 	}
 
-	public void appendToQuoteDB(StockSeries stockSeries) throws jep.JepException {
+	public void appendToQuoteDB(StockSeries stockSeries) throws DBException {
 		for (String symbol: stockSeries.getSymbolList()) {
 			appendToQuoteDB(stockSeries.getBarSeries(symbol));
 		}
@@ -108,40 +111,69 @@ public class MarketStoreDBManager implements DBManagerAPI {
 		
 	}
 	
-	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws jep.JepException {
-		jep.Jep jep = initJep();
-        Object res = jep.invoke("client.read_from_quote_db", symbol, interval.name());
-        jep.close();
-        return convertPyResToBarSeries(symbol, interval, res);
+	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws DBException {
+		try {
+			String symbols[] = {symbol};
+			QueryRequest req = new QueryRequest(symbols, convertInterval(Interval.ONE_MIN), attrGroup);
+			QueryResponse res = client.query(req);
+	        return convertMSResToBarSeries(symbol, interval, res);
+		} catch (Exception e) {
+			throw new DBException("failed to read from quote DB", e);
+		}
 	}
 	
-	public void rewriteToQuoteDB(BarSeries barSeries) throws jep.JepException {
+	public void rewriteToQuoteDB(BarSeries barSeries) throws DBException {
 		// TODO: implement when destroy API of marketstore is ready
 	}
 	
-	public void appendToQuoteDB(BarSeries barSeries) throws jep.JepException { 
+	public void appendToQuoteDB(BarSeries barSeries) throws DBException { 
 		LOG.info("appending to quote DB. num quotes =" + barSeries.size());
-		jep.Jep jep = initJep();
-        jep.set("obj", barSeries);
-        jep.eval("client.write_to_quote_db(obj)");
-        jep.close();
+		
+		// Convert BarSeries to separate arrays.
+		int length = barSeries.size();
+		long epochs[] = new long[length];
+		double opens[] = new double[length];
+		double lows[] = new double[length];
+		double highs[] = new double[length];
+		double closes[] = new double[length];
+		long volumes[] = new long[length];
+
+		int i = 0; for (Quote quote: barSeries) {
+			epochs[i] = quote.time().getSeconds();
+			opens[i] = quote.open().floatValue();
+			highs[i] = quote.high().floatValue();
+			lows[i] = quote.low().floatValue();
+			closes[i] = quote.close().floatValue();
+			volumes[i] = quote.volume();		
+		}
+		//Object[] data = new Object[] {epochs, opens, };
+		
+		try {
+			WriteRequest req = new WriteRequest(barSeries.getSymbol(), "1Min", attrGroup, barSeries.size());
+			req.addDataColum("Epoch", epochs);
+			req.addDataColum("Open", opens);
+			req.addDataColum("High", highs);
+			req.addDataColum("Low", lows);
+			req.addDataColum("Close", closes);
+			req.addDataColum("Volume", volumes);
+			client.write(req);
+		} catch (Exception e) {
+			throw new DBException("marketstore write request failed", e);
+		}
 	}
 	
-	private BarSeries convertPyResToBarSeries(String symbol, Interval interval, Object pyBarSeries) {
-		Integer x = new Integer(8);
-		// long y = x.longValue();
+	private BarSeries convertMSResToBarSeries(String symbol, Interval interval, QueryResponse res) {		
 		BarSeries barSeries = new BarSeries(symbol, interval);
-		List<Object> quoteRaw;
-		for (Object obj: (ArrayList<Object>) pyBarSeries) {
-        	quoteRaw = (List<Object>) obj;        
+		int length = ((long[])res.data()[0]).length;
+		int i; for (i = 0; i < length; i++) {
         	Quote quote = new Quote(symbol,
-        						    ((Double)quoteRaw.get(1)).doubleValue(),
-        						    ((Double)quoteRaw.get(2)).doubleValue(),
-        						    ((Double)quoteRaw.get(3)).doubleValue(),
-        						    ((Double)quoteRaw.get(4)).doubleValue(),        						    
-        						    ((Integer)quoteRaw.get(5)).longValue(),
+        						    ((double[])res.data()[1])[i],
+        						    ((double[])res.data()[2])[i],
+        						    ((double[])res.data()[3])[i],
+        						    ((double[])res.data()[4])[i],        						    
+        						    ((long[])res.data()[5])[i],
         						    interval,
-        						    new Time(((Integer)quoteRaw.get(0)).longValue()));
+        						    new Time(((long[])res.data()[0])[i]));
         	barSeries.addQuote(quote);
         }
 		return barSeries;
