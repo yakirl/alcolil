@@ -1,4 +1,4 @@
-package org.gitprof.alcolil.marketdata;
+package org.yakirl.alcolil.marketdata;
 
 import static org.junit.Assert.assertEquals;
 import java.math.BigDecimal;
@@ -6,17 +6,18 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import org.gitprof.alcolil.common.BarSeries;
-import org.gitprof.alcolil.common.Interval;
-import org.gitprof.alcolil.common.Time;
+import org.yakirl.alcolil.common.BarSeries;
+import org.yakirl.alcolil.common.Interval;
+import org.yakirl.alcolil.common.Time;
 
-import org.gitprof.alcolil.unittests.SuperTestCase;
+import org.yakirl.alcolil.unittests.SuperTestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.yakirl.alcolil.marketdata.IEXFetcher;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 

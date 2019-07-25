@@ -1,4 +1,4 @@
-package org.gitprof.alcolil.marketdata;
+package org.yakirl.alcolil.marketdata;
 
 import pl.zankowski.iextrading4j.client.*;
 import pl.zankowski.iextrading4j.client.rest.request.stocks.QuoteRequestBuilder;
