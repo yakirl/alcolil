@@ -35,7 +35,9 @@ public class CoreScanner {
 		
 	public CoreScanner(DBManagerAPI dbManager, FetcherAPI fetcher) {	
 	    this.fetcher = fetcher;
-		this.dbManager = dbManager;		
+		this.dbManager = dbManager;
+		this.stop = new AtomicBoolean();
+		this.sleeper = new Object();
         initializeAnalyzers();
 	}
 	

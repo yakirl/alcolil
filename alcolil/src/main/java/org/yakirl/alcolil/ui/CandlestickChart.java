@@ -33,13 +33,14 @@ public class CandlestickChart extends BaseChart {
 	private static final long serialVersionUID = 6294689542092367723L;
 	private static final DateFormat READABLE_TIME_FORMAT = new SimpleDateFormat("kk:mm:ss");
 
+	private ChartPanel chartPanel;
 	private OHLCSeries ohlcSeries;
 	private TimeSeries volumeSeries;
 
 	private static final int MIN = 60000; 
 
 	public CandlestickChart(String title) {
-		createCandlestickChart(title);
+		setCandlestickChartPanel(title);
 	}
 	
 	@SuppressWarnings("serial")
@@ -93,13 +94,15 @@ public class CandlestickChart extends BaseChart {
 		}
 	}
 	
-	public void createCandlestickChart(String title) {
-		// Create new chart
-		final JFreeChart candlestickChart = fillCandlestickChart(title);
-		// Create new chart panel
-		final ChartPanel chartPanel = new ChartPanel(candlestickChart);
+	public void reset(String title) {
+		final JFreeChart candlestickChart = createCandlestickChart(title);
+		chartPanel.setChart(candlestickChart);
+	}
+	
+	public void setCandlestickChartPanel(String title) {
+		final JFreeChart candlestickChart = createCandlestickChart(title);
+		chartPanel = new ChartPanel(candlestickChart);
 		chartPanel.setPreferredSize(new java.awt.Dimension(1200, 500));
-		// Enable zooming
 		chartPanel.setMouseZoomable(true);
 		chartPanel.setMouseWheelEnabled(true);
 		add(chartPanel, BorderLayout.CENTER);
@@ -111,69 +114,37 @@ public class CandlestickChart extends BaseChart {
         volumeSeries.add(t, v);     
     }
 	
-	private void fillCandlesticks(OHLCSeries ohlcSeries) {
-		// For loop candles
-		// do: ohlcSeries.add(t, o, h, l, c);
-	}
-	
-	private void fillVolumes(TimeSeries volumeSeries) {
-		// for volumes
-		// do: volumeSeries.add(t, v);		
-	}
-	
-	private JFreeChart fillCandlestickChart(String chartTitle) {
-		/**
-		 * Creating candlestick subplot
-		 */
-		// Create OHLCSeriesCollection as a price dataset for candlestick chart
+	private JFreeChart createCandlestickChart(String chartTitle) {
 		OHLCSeriesCollection candlestickDataset = new OHLCSeriesCollection();
 		ohlcSeries = new OHLCSeries("Price");
-		fillCandlesticks(ohlcSeries);
 		candlestickDataset.addSeries(ohlcSeries);
-		// Create candlestick chart priceAxis
 		NumberAxis priceAxis = new NumberAxis("Price");
 		priceAxis.setAutoRangeIncludesZero(false);
-		// Create candlestick chart renderer
 		CandlestickRenderer candlestickRenderer = new CandlestickRenderer(CandlestickRenderer.WIDTHMETHOD_AVERAGE,
 				false, new CustomHighLowItemLabelGenerator(new SimpleDateFormat("kk:mm"), new DecimalFormat("0.000")));
-		// Create candlestickSubplot
 		XYPlot candlestickSubplot = new XYPlot(candlestickDataset, null, priceAxis, candlestickRenderer);
 		candlestickSubplot.setBackgroundPaint(Color.white);
 
-		/**
-		 * Creating volume subplot
-		 */
-		// creates TimeSeriesCollection as a volume dataset for volume chart
+		// Creating volume subplot
 		TimeSeriesCollection volumeDataset = new TimeSeriesCollection();
 		volumeSeries = new TimeSeries("Volume");
-		fillVolumes(volumeSeries);
 		volumeDataset.addSeries(volumeSeries);
-		// Create volume chart volumeAxis
 		NumberAxis volumeAxis = new NumberAxis("Volume");
 		volumeAxis.setAutoRangeIncludesZero(false);
-		// Set to no decimal
 		volumeAxis.setNumberFormatOverride(new DecimalFormat("0"));
-		// Create volume chart renderer
 		XYBarRenderer timeRenderer = new XYBarRenderer();
 		timeRenderer.setShadowVisible(false);
 		timeRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator("Volume--> Time={1} Size={2}",
 				new SimpleDateFormat("kk:mm"), new DecimalFormat("0")));
-		// Create volumeSubplot
 		XYPlot volumeSubplot = new XYPlot(volumeDataset, null, volumeAxis, timeRenderer);
 		volumeSubplot.setBackgroundPaint(Color.white);
 
-		/**
-		 * Create chart main plot with two subplots (candlestickSubplot,
-		 * volumeSubplot) and one common dateAxis
-		 */
-		// Creating charts common dateAxis
+		// main plot of 2 subplots
 		DateAxis dateAxis = new DateAxis("Time");
 		//dateAxis.setDateFormatOverride(new SimpleDateFormat("kk:mm"));
 		dateAxis.setDateFormatOverride(new SimpleDateFormat("MM:dd"));
-		// reduce the default left/right margin from 0.05 to 0.02
 		dateAxis.setLowerMargin(0.02);
 		dateAxis.setUpperMargin(0.02);
-		// Create mainPlot
 		CombinedDomainXYPlot mainPlot = new CombinedDomainXYPlot(dateAxis);
 		mainPlot.setGap(10.0);
 		mainPlot.add(candlestickSubplot, 3);

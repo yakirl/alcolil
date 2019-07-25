@@ -132,7 +132,8 @@ public class GUI implements Runnable {
 		JTextField symbols = new JTextField("symbols");
 		JButton start = new JButton("Start");
 		start.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {						
+			public void actionPerformed(ActionEvent e) {
+				chart.reset("New CandleChart");
 				handler.backtest(true, symbols.getText(), (timeMillis, o, h, l, c, v) -> chart.addCandle(timeMillis, o, h, l, c, v));
 			}
 		});

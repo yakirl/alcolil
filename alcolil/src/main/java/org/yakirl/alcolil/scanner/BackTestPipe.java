@@ -70,7 +70,7 @@ public class BackTestPipe extends BaseQuotePipe {
 	
 	public void init() throws Exception {
 		StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
-		quoteQueue = new QuoteQueue(300);
+		quoteQueue = new QuoteQueue(1000);
 		scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
 	}
 	

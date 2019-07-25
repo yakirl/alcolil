@@ -54,7 +54,7 @@ public class MarketStoreDBManagerTest extends SuperTestCase {
     }   	
     
     @Test
-    public void testReadWriteTimeSeriesToQuoteDB() throws Exception {
+    public void testReadWriteSimple() throws Exception {
     	//TimeSeries intcTimeSeries = new TimeSeries("INTC");
     	Quote quote;
     	String symbol = RandomStringUtils.random(4, true, false);
@@ -63,13 +63,49 @@ public class MarketStoreDBManagerTest extends SuperTestCase {
     	barSeries.addQuote(quote);
     	dbManager.appendToQuoteDB(barSeries);
     	
-    	BarSeries intcOneMin = dbManager.readFromQuoteDB(symbol, Interval.ONE_MIN);
-        // BarSeries intcOneMin = intcTimeSeriesInput.getBarSeries(Interval.ONE_MIN);
-        assertEqualsDbl(1.02, intcOneMin.getQuote(0).open().doubleValue());
-        assertEqualsDbl(3.60, intcOneMin.getQuote(0).high().doubleValue());
-        assertEqualsDbl(0.60, intcOneMin.getQuote(0).low().doubleValue());
-        assertEqualsDbl(1.43, intcOneMin.getQuote(0).close().doubleValue());
-        assertEquals(20500, intcOneMin.getQuote(0).volume());
-        assertEquals(Interval.ONE_MIN, intcOneMin.getQuote(0).interval());
+    	BarSeries remoteBarSeries = dbManager.readFromQuoteDB(symbol, Interval.ONE_MIN);
+        // BarSeries remoteBarSeries = intcTimeSeriesInput.getBarSeries(Interval.ONE_MIN);
+        assertEqualsDbl(1.02, remoteBarSeries.getQuote(0).open().doubleValue());
+        assertEqualsDbl(3.60, remoteBarSeries.getQuote(0).high().doubleValue());
+        assertEqualsDbl(0.60, remoteBarSeries.getQuote(0).low().doubleValue());
+        assertEqualsDbl(1.43, remoteBarSeries.getQuote(0).close().doubleValue());
+        assertEquals(20500, remoteBarSeries.getQuote(0).volume());
+        assertEquals(Interval.ONE_MIN, remoteBarSeries.getQuote(0).interval());
+    }
+    
+    
+    private Quote genQuote(String symbol, int timeOffset) {
+		double upLimit = 50.0, bottomLimit = 0.0, candleRange=8.0;
+		double low = bottomLimit + Math.random() * (upLimit - bottomLimit);
+		double high = low + Math.random() * candleRange;
+		double close = low + Math.random() * (high - low);
+		double open = low + Math.random() * (high - low);
+		long volume = (long)(Math.random() * 1000.0);
+		long epoch = 1564040054L + ((long)timeOffset * 60L);
+		return new Quote(symbol, open, high, low, close, volume, Interval.ONE_MIN, new Time(epoch));
+	}
+    
+    @Test
+    public void testReadWriteBigData() throws Exception {
+    	String symbol = RandomStringUtils.random(4, true, false);
+    	BarSeries barSeries = new BarSeries(symbol, Interval.ONE_MIN);
+    	int range = 50;
+    	    	    	
+    	int i; for(i = 0; i < range; i++) {
+    		barSeries.addQuote(genQuote(symbol, i));
+    	}
+
+    	dbManager.appendToQuoteDB(barSeries);
+    	
+    	BarSeries remoteBarSeries = dbManager.readFromQuoteDB(symbol, Interval.ONE_MIN);
+    	
+    	for(i = 0; i < range; i++) {
+    		assertEqualsDbl(barSeries.getQuote(i).open().doubleValue(), remoteBarSeries.getQuote(i).open().doubleValue());
+    		assertEqualsDbl(barSeries.getQuote(i).high().doubleValue(), remoteBarSeries.getQuote(i).high().doubleValue());
+    		assertEqualsDbl(barSeries.getQuote(i).low().doubleValue(), remoteBarSeries.getQuote(i).low().doubleValue());
+    		assertEqualsDbl(barSeries.getQuote(i).close().doubleValue(), remoteBarSeries.getQuote(i).close().doubleValue());    		
+    		assertEquals(barSeries.getQuote(i).volume(), remoteBarSeries.getQuote(i).volume());
+    		assertEquals(barSeries.getQuote(i).interval(), remoteBarSeries.getQuote(i).interval());
+    	}
     }
 }

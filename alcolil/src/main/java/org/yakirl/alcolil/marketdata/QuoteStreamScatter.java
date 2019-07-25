@@ -79,8 +79,9 @@ public class QuoteStreamScatter {
 			try {
 				symbol = jobs.getSymbolList().get(new Random().nextInt(jobs.size()));
 				barSeries = jobs.getBarSeries(symbol);
-				nextQuote = barSeries.nextQuote();
-				if (null == nextQuote) {
+				try { // TODO: handle empty localObserver in other way. currently we hide other exceptions
+					nextQuote = barSeries.nextQuote();
+				} catch(Exception e) {
 					removeEmptyJobLine(symbol);
 					continue;
 				}
@@ -89,6 +90,7 @@ public class QuoteStreamScatter {
 				LOG.error("Failed to post quote", e);
 			}
 		}
+		LOG.error("POSTING EOF");
 		executeJob((new Quote()).setEof());
 	}
 }

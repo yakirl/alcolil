@@ -55,7 +55,7 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 	
 	public void validateDBStructure() throws Exception {
-	
+		client.listSymbols();
 	}
 	
 	public void close() {
@@ -114,7 +114,7 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws DBException {
 		try {
 			String symbols[] = {symbol};
-			QueryRequest req = new QueryRequest(symbols, convertInterval(Interval.ONE_MIN), attrGroup);
+			QueryRequest req = new QueryRequest(symbols, convertInterval(interval), attrGroup);
 			QueryResponse res = client.query(req);
 	        return convertMSResToBarSeries(symbol, interval, res);
 		} catch (Exception e) {
@@ -144,12 +144,12 @@ public class MarketStoreDBManager implements DBManagerAPI {
 			highs[i] = quote.high().floatValue();
 			lows[i] = quote.low().floatValue();
 			closes[i] = quote.close().floatValue();
-			volumes[i] = quote.volume();		
-		}
-		//Object[] data = new Object[] {epochs, opens, };
+			volumes[i] = quote.volume();
+			i++;
+		}		
 		
 		try {
-			WriteRequest req = new WriteRequest(barSeries.getSymbol(), "1Min", attrGroup, barSeries.size());
+			WriteRequest req = new WriteRequest(barSeries.getSymbol(), convertInterval(barSeries.getInterval()), attrGroup, barSeries.size());
 			req.addDataColum("Epoch", epochs);
 			req.addDataColum("Open", opens);
 			req.addDataColum("High", highs);
