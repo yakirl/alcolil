@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,7 +18,7 @@ import org.gitprof.alcolil.common.*;
  *
  * This class should solve the issue of multiple Jep sub interpreters which make use of CPython libs like numpy and pandas.
  * Those modules defines C static variable, which are shared among all sub-interpreters, this causes to variaty of problems.
- * Due to lack of another appropriate solution I decide for now to serialize all DB access via one worke thread that will
+ * Due to lack of another appropriate solution I decide for now to serialize all DB access via one worker thread that will
  * 	be the only one use Jep.  
  */
 
@@ -43,6 +44,8 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
 			LOG.debug("db conn string isnt set, using default");
 			conf = new Conf();
 		}
+		stop = new AtomicBoolean();
+		workQueue = new LinkedBlockingQueue<Job>();
 	}
 	
 	public static synchronized DBManagerAPI getInstance() {
@@ -78,6 +81,11 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
 	public void close() throws InterruptedException {
 		stopDBWorker();
 		workerThread.join();
+		conf = null;
+		_jep = null;
+		stop = null;
+		workerThread = null;
+		dbManager = null;
 	}
 	
 	public static void stopDBWorker() {
@@ -98,16 +106,36 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
 	private abstract class Job {
 		public Object ret;
 		public jep.JepException exc;
+		public AtomicBoolean done;
+		
+		public Job() {
+			done = new AtomicBoolean();
+		}
 		
 		public abstract void execute();
+		
+		public synchronized void ready() {
+			done.set(true);
+			notify();
+		}
+		
+		public synchronized void waitForReady(long timeoutMillis) throws InterruptedException, DBException {		
+			wait(timeoutMillis);
+			if (done.get() == false) {
+				throw new DBException("DB job has not been processed within timeout");
+			}
+		}
 	}
 	
 	private void mainLoop() {
 		while(stop.get() == false) {
 			try {
 				Job job = workQueue.poll(waitOnQueueMillis, TimeUnit.MILLISECONDS);
-				job.execute();
-				job.notify();
+				if (job != null) {
+					LOG.error("executing job");
+					job.execute();
+					job.ready();				
+				}
 			} catch (InterruptedException e) {
 				
 			}
@@ -119,13 +147,26 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
 		}
 	}
 	
+	private void sendToQueue(Job j) throws DBException {
+		verifyDBWorkerRunning();
+		try {
+			workQueue.put(j);
+			j.waitForReady(jobTimeoutMillis);
+			if (j.exc != null) {
+				throw new DBException("Db job failed", j.exc);
+			}
+		} catch (InterruptedException e) {
+			throw new DBException("failed to send job to DB worker", e);
+		}
+	}
+	
 	public static void verifyDBWorkerRunning() throws DBException {
 		if (workerThread == null) {
 			throw new DBException("DB worker is not running!");
 		}
 	}
 	
-	public void validateDBStructure() throws Exception {
+	public void validateDBStructure() throws DBException {
 		Job j = new Job() {
 			public void execute() {
 				try {
@@ -181,15 +222,6 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
 		
 	}
 	
-	private void sendToQueue(Job j) throws DBException {
-		try {
-			workQueue.put(j);
-			j.wait(jobTimeoutMillis);
-		} catch (InterruptedException e) {
-			throw new DBException("failed to send job to DB worker", e);
-		}	
-	}
-	
 	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws DBException {
 		Job j = new Job() {
 			public void execute() {
@@ -235,7 +267,7 @@ public class SerializedMarketStoreDBManager implements DBManagerAPI {
         						    ((Double)quoteRaw.get(2)).doubleValue(),
         						    ((Double)quoteRaw.get(3)).doubleValue(),
         						    ((Double)quoteRaw.get(4)).doubleValue(),        						    
-        						    ((Integer)quoteRaw.get(5)).longValue(),
+        						    (long)quoteRaw.get(5),
         						    interval,
         						    new Time(((Integer)quoteRaw.get(0)).longValue()));
         	barSeries.addQuote(quote);

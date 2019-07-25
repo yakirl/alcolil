@@ -9,11 +9,35 @@ import pymarketstore as pymkts
 import numpy as np
 import pandas as pd
 
+'''
 def is_jep():
     return os.environ.get("INTERP", "jep") == "jep"
 
 if is_jep():
     from java.util import ArrayList
+'''
+
+
+
+def set_debug():
+    import requests
+    import logging
+    try:
+        import http.client as http_client
+    except ImportError:
+        # Python 2
+        import httplib as http_client
+    http_client.HTTPConnection.debuglevel = 1
+
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    requests_log = logging.getLogger("requests.packages.urllib3")
+    requests_log.setLevel(logging.DEBUG)
+    requests_log.propagate = True
+
+if os.environ.get("DEBUG", "False") == "True":
+    set_debug()
+
 
 def debug(msg):
     print(msg)
@@ -70,9 +94,26 @@ class MarketStoreClient(object):
                         dtype=[('Epoch', 'i8'),('Open', 'f4'),('High', 'f4'), ('Low', 'f4'), ('Close', 'f4'), ('Volume', 'i8')])
         self.client.write(data, self.bucket(symbol, interval))
 
+    def write_debug(self):
+        data = np.array([(1563815922,)],
+                        dtype=[('Epoch', 'i8')])
+        self.client.write(data, "BLA/1Min/OHLCV")
+
+
+    # untested
+    def write_to_quote_db_batch(self, barSeries):
+        ''' Gets list of Quotes and insert to quotes db
+        '''
+        interval, symbol = self.get_interval_and_symbol(barSeries)
+        debug("Writing to quote DB: symbol %s. interval %s (batch)" % (symbol, interval))
+        data = np.array([(pd.Timestamp(quote.time().getSeconds()).value, quote.open(), quote.high(), quote.low(), quote.close(), quote.volume()) for quote in barSeries],
+                        dtype=[('Epoch', 'i8'),('Open', 'f4'),('High', 'f4'), ('Low', 'f4'), ('Close', 'f4'), ('Volume', 'i8')])
+        self.client.write(data, self.bucket(symbol, interval))
+
+
     def read_from_quote_db(self, symbol, interval):
         replyArr = self.read(symbol, interval).array.tolist()
-        retArr = ArrayList(replyArr) if is_jep() else replyArr
+        retArr = replyArr
         debug("read list: %s" % retArr)
         return retArr
 

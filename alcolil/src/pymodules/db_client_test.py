@@ -52,7 +52,7 @@ class MarketStoreClientTest(object):
 
     def test_read_write_simple(self):
         c = db_client.MarketStoreClient()
-        symbol = "INTC"
+        symbol = "BEBE"
         interval = "ONE_MIN"
         data = [
             (1.2, 3.2, 4.3, 2.2, 1210, 11913323233543L),
@@ -72,5 +72,11 @@ class MarketStoreClientTest(object):
         reply = c.read_from_quote_db(symbol, interval)
         print(reply)
 
-test = MarketStoreClientTest()
-test.test()
+    def test_sanity(self):
+        c = db_client.MarketStoreClient()
+        reply = c.test_connection()
+        print(reply)
+
+    def test_debug(self):
+        c = db_client.MarketStoreClient()
+        c.write_debug()
