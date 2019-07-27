@@ -14,14 +14,13 @@ import org.junit.Before;
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 
-import org.python.util.PythonInterpreter;
 import org.yakirl.alcolil.common.*;
 import org.yakirl.alcolil.database.Conf;
 import org.yakirl.alcolil.database.FileSystemDBManager;
 import org.yakirl.alcolil.database.MarketStoreDBManager;
 import org.yakirl.alcolil.unittests.SuperTestCase;
-// import org.black.ninia.Jep;
-import org.python.core.*;
+
+
 
 /**
  * Unit test for DBManager.

@@ -26,13 +26,8 @@ public class HistoricalDataUpdater {
 		this.dbManager = dbManager;
 		this.pipe = pipe;
 	}
-	
-	public void updateQuoteDB() throws Exception {
-		StockCollection stocks = dbManager.getStockCollection();
-		updateQuoteDB(stocks.getSymbols(), Interval.ONE_MIN);
-	}
-	
-	public void updateQuoteDB(List<String> symbols, Interval interval) throws Exception {		
+		
+	public void updateQuoteDB() throws Exception {		
 		StockSeries stockSeries = pipe.getRemoteHistoricalData();
 		dbManager.appendToQuoteDB(stockSeries);	
 	}				

@@ -2,7 +2,10 @@ package org.yakirl.alcolil.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.lang.reflect.Field;
 import java.text.DateFormat;
+//import java.text.DateFormat.Field;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -31,7 +34,7 @@ import org.jfree.data.xy.XYDataset;
 public class CandlestickChart extends BaseChart {
 	
 	private static final long serialVersionUID = 6294689542092367723L;
-	private static final DateFormat READABLE_TIME_FORMAT = new SimpleDateFormat("kk:mm:ss");
+	private static final DateFormat TIME_FORMAT = new SimpleDateFormat("mm:ss");
 
 	private ChartPanel chartPanel;
 	private OHLCSeries ohlcSeries;
@@ -105,23 +108,28 @@ public class CandlestickChart extends BaseChart {
 		chartPanel.setPreferredSize(new java.awt.Dimension(1200, 500));
 		chartPanel.setMouseZoomable(true);
 		chartPanel.setMouseWheelEnabled(true);
+	    
 		add(chartPanel, BorderLayout.CENTER);
 	}
 	
-    public void addCandle(long timeMillis, double o, double h, double l, double c, long v) {        
-        FixedMillisecond t = new FixedMillisecond(timeMillis);
+	
+	
+    public void addCandle(long timeMillis, double o, double h, double l, double c, long v) {
+    	Date date = new Date(timeMillis);
+        FixedMillisecond t = new FixedMillisecond(date);
         ohlcSeries.add(t, o, h, l, c);
         volumeSeries.add(t, v);     
     }
 	
 	private JFreeChart createCandlestickChart(String chartTitle) {
+		// Creating price subplot
 		OHLCSeriesCollection candlestickDataset = new OHLCSeriesCollection();
 		ohlcSeries = new OHLCSeries("Price");
 		candlestickDataset.addSeries(ohlcSeries);
 		NumberAxis priceAxis = new NumberAxis("Price");
 		priceAxis.setAutoRangeIncludesZero(false);
 		CandlestickRenderer candlestickRenderer = new CandlestickRenderer(CandlestickRenderer.WIDTHMETHOD_AVERAGE,
-				false, new CustomHighLowItemLabelGenerator(new SimpleDateFormat("kk:mm"), new DecimalFormat("0.000")));
+				false, new CustomHighLowItemLabelGenerator(TIME_FORMAT, new DecimalFormat("0.000")));
 		XYPlot candlestickSubplot = new XYPlot(candlestickDataset, null, priceAxis, candlestickRenderer);
 		candlestickSubplot.setBackgroundPaint(Color.white);
 
@@ -135,18 +143,17 @@ public class CandlestickChart extends BaseChart {
 		XYBarRenderer timeRenderer = new XYBarRenderer();
 		timeRenderer.setShadowVisible(false);
 		timeRenderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator("Volume--> Time={1} Size={2}",
-				new SimpleDateFormat("kk:mm"), new DecimalFormat("0")));
+				TIME_FORMAT, new DecimalFormat("0")));
 		XYPlot volumeSubplot = new XYPlot(volumeDataset, null, volumeAxis, timeRenderer);
 		volumeSubplot.setBackgroundPaint(Color.white);
 
 		// main plot of 2 subplots
 		DateAxis dateAxis = new DateAxis("Time");
-		//dateAxis.setDateFormatOverride(new SimpleDateFormat("kk:mm"));
-		dateAxis.setDateFormatOverride(new SimpleDateFormat("MM:dd"));
+		//dateAxis.setDateFormatOverride(TIME_FORMAT);
 		dateAxis.setLowerMargin(0.02);
 		dateAxis.setUpperMargin(0.02);
 		CombinedDomainXYPlot mainPlot = new CombinedDomainXYPlot(dateAxis);
-		mainPlot.setGap(10.0);
+		mainPlot.setGap(10.0); 
 		mainPlot.add(candlestickSubplot, 3);
 		mainPlot.add(volumeSubplot, 1);
 		mainPlot.setOrientation(PlotOrientation.VERTICAL);

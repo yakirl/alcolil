@@ -1,6 +1,5 @@
 package org.yakirl.alcolil.scanner;
 
-import java.io.IOException;
 
 import java.util.Map;
 import java.util.List;
@@ -69,7 +68,10 @@ public class BackTestPipe extends BaseQuotePipe {
 	}
 	
 	public void init() throws Exception {
-		StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval); 
+		if (pipeSource == PipeSource.REMOTE) {
+			return;
+		}
+		StockSeries stockSeries = dbManager.readFromQuoteDB(symbols, interval, start, stop); 
 		quoteQueue = new QuoteQueue(1000);
 		scatter = new QuoteStreamScatter(quoteQueue, stockSeries);
 	}

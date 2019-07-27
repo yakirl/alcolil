@@ -79,15 +79,19 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 
 	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws DBException {
+		return readFromQuoteDB(symbols, interval, null, null);
+	}
+
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval, Time from, Time to) throws DBException {
 		StockSeries stockSeries = new StockSeries(Interval.ONE_MIN);
 		BarSeries barSeries;
 		for (String symbol: symbols) {
-			barSeries = readFromQuoteDB(symbol, interval);
+			barSeries = readFromQuoteDB(symbol, interval, from, to);
 			stockSeries.addBarSeries(symbol, barSeries);
 		}
 		return stockSeries;
 	}
-
+	
 	public void rewriteToQuoteDB(StockSeries stockSeries) throws Exception {
 		
 	}
@@ -112,9 +116,17 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	}
 	
 	public BarSeries readFromQuoteDB(String symbol, Interval interval) throws DBException {
+		return readFromQuoteDB(symbol, interval, null, null);
+	}
+	
+	public BarSeries readFromQuoteDB(String symbol, Interval interval, Time from, Time to) throws DBException {
 		try {
 			String symbols[] = {symbol};
 			QueryRequest req = new QueryRequest(symbols, convertInterval(interval), attrGroup);
+			if (from != null)
+				req = req.epochStart(from.getSeconds());
+			if (to != null)
+				req = req.epochEnd(to.getSeconds());
 			QueryResponse res = client.query(req);
 	        return convertMSResToBarSeries(symbol, interval, res);
 		} catch (Exception e) {
@@ -164,6 +176,9 @@ public class MarketStoreDBManager implements DBManagerAPI {
 	
 	private BarSeries convertMSResToBarSeries(String symbol, Interval interval, QueryResponse res) {		
 		BarSeries barSeries = new BarSeries(symbol, interval);
+		if (res.err() != null) {
+			return barSeries;
+		}
 		int length = ((long[])res.data()[0]).length;
 		int i; for (i = 0; i < length; i++) {
         	Quote quote = new Quote(symbol,

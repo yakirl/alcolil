@@ -32,6 +32,8 @@ public interface DBManagerAPI {
 	/*** Quotes DB ***/
 	
 	StockSeries readFromQuoteDB(List<String> symbols, Interval interval) throws Exception;
+	
+	StockSeries readFromQuoteDB(List<String> symbols, Interval interval, Time from, Time to) throws Exception;
 
 	void rewriteToQuoteDB(StockSeries stockSeries) throws Exception;
 
@@ -44,6 +46,8 @@ public interface DBManagerAPI {
 	void appendToQuoteDB(TimeSeries timeSeries) throws Exception;
 	
 	BarSeries readFromQuoteDB(String symbol, Interval interval) throws Exception;
+	
+	// BarSeries readFromQuoteDB(String symbol, Interval interval) throws Exception;
 
 	void rewriteToQuoteDB(BarSeries barSeries) throws Exception;
 

@@ -30,8 +30,8 @@ public class Time {
 	}
 	
 	/* seconds from the the epoch time: jan 1, 1970, 00:00:00 GMT */
-	public Time(long unixTimestamp) {	       	    
-        dateTime = new DateTime(unixTimestamp * 1000L);      
+	public Time(long epochSeconds) {	       	    
+        dateTime = new DateTime(epochSeconds * 1000L);      
 	}
 	
 	public Time(DateTime dateTime) {

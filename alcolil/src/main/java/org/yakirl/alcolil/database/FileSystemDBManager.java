@@ -200,6 +200,15 @@ public class FileSystemDBManager implements DBManagerAPI {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.gitprof.alcolil.database.DBManagerAPI#readFromQuoteDB(java.util.List, org.gitprof.alcolil.common.AInterval, org.gitprof.alcolil.common.ATime, org.gitprof.alcolil.common.ATime)
+	 */
+	@Override
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval, Time from, Time to) throws IOException {
+	    // TODO
+		return new StockSeries(interval);
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.gitprof.alcolil.database.DBManagerAPI#rewriteToQuoteDB(org.gitprof.alcolil.common.AStockSeries)
 	 */
 	@Override

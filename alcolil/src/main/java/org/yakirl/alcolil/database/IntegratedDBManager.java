@@ -51,6 +51,10 @@ public class IntegratedDBManager implements DBManagerAPI {
 		return ms.readFromQuoteDB(symbols, interval);
 	}
 
+	public StockSeries readFromQuoteDB(List<String> symbols, Interval interval, Time from, Time to) throws Exception {
+		return ms.readFromQuoteDB(symbols, interval, from, to);
+	}
+	
 	public void rewriteToQuoteDB(StockSeries stockSeries) throws Exception {
 		ms.rewriteToQuoteDB(stockSeries);
 	}

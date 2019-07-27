@@ -93,7 +93,7 @@ public class Core
     	} else if (Command.Opcode.REALTIME == cmd.opcode) {
     		realTimeScanStart();
     	} else if (Command.Opcode.UPDATE_DB == cmd.opcode) {
-    		updateLocalDB();    	
+    		updateLocalDB(cmd);    	
     	} else if (Command.Opcode.DO_NOTHING == cmd.opcode) {
     		LOG.info("DO_NOTHING");
     	} else {
@@ -154,9 +154,9 @@ public class Core
     	
     }
     
-    private void updateLocalDB() throws Exception {
+    private void updateLocalDB(Command cmd) throws Exception {
     	FetcherAPI fetcher = new YahooFetcher();
-    	BackTestPipe pipe = new BackTestPipe(dbManager, fetcher, BackTestPipe.PipeSource.LOCAL, Interval.ONE_MIN);
+    	BackTestPipe pipe = new BackTestPipe(dbManager, fetcher, BackTestPipe.PipeSource.LOCAL, cmd.symbols, cmd.interval);
     	HistoricalDataUpdater updater = new HistoricalDataUpdater(dbManager, pipe);
     	updater.updateQuoteDB();
     }

@@ -30,10 +30,5 @@ public class BackTester {
 	
 	public void stop() {
 		coreScanner.stop();
-		/*try {
-			scannerThread.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}*/
 	}	
 }

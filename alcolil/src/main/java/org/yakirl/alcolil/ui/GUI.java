@@ -67,7 +67,7 @@ public class GUI implements Runnable {
         //CandlestickChart candlestickChart = new CandlestickChart();
         //frame.setContentPane(candlestickChart);   
           
-        window.setResizable(false);
+        window.setResizable(true);
         window.pack();
         window.setLocationRelativeTo(null);      
 	}
@@ -105,7 +105,8 @@ public class GUI implements Runnable {
 				CardLayout cardLayout = (CardLayout) bottomPanel.getLayout();
 				cardLayout.show(bottomPanel, "update_db");
 			}
-		});				
+		});
+		menuPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 		menuPanel.add(backtestButton);
 		menuPanel.add(updateDBButton);
 	}		
@@ -129,7 +130,8 @@ public class GUI implements Runnable {
 		dataSection.setLayout(new CardLayout());
 		CandlestickChart chart = new CandlestickChart("CandleChart");
 		JPanel input = new JPanel();
-		JTextField symbols = new JTextField("symbols");
+		JTextField symbols = new JTextField("Enter symbols");
+		symbols.setColumns(15);
 		JButton start = new JButton("Start");
 		start.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -159,8 +161,11 @@ public class GUI implements Runnable {
 				cardLayout.show(dataSection, "chart");
 			}
 		});
-		subMenu.add(runButton);
-		subMenu.add(watchButton);
+		subMenu.setBorder(BorderFactory.createLineBorder(Color.black));
+		subMenu.setLayout(new BorderLayout(0,0));
+		
+		subMenu.add(runButton, BorderLayout.PAGE_START);
+		subMenu.add(watchButton, BorderLayout.CENTER);
 		
 		// Add all to backtest panel
 		panel.add(subMenu);
@@ -168,5 +173,40 @@ public class GUI implements Runnable {
 	}
 	
 	private void setUpdateDBPanel(JPanel panel) {
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		
+		// DataSection - CardLayout, toggle between Chart and Input
+		JPanel dataSection = new JPanel();		
+		
+		JPanel input = new JPanel();
+		JTextField symbols = new JTextField("Enter symbols");
+		symbols.setColumns(15);
+		JButton start = new JButton("Update");
+		start.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {			
+				handler.updateDB(symbols.getText(), "ONE_MIN", () -> popup());
+			}
+		});
+		input.add(symbols);
+		input.add(start);
+
+		dataSection.add(input, "input");
+				
+		// Add all to updateDB panel
+		panel.add(dataSection);
+	}
+	
+	public interface Notifier {
+		public void notifyDone();
+	}
+	
+	private void popup() {
+        final JFrame parent = new JFrame();
+        //JButton button = new JButton();      
+        //parent.add(button);
+        parent.pack();
+        parent.setVisible(true);
+        JOptionPane.showMessageDialog(parent,  "Done!");
+        
 	}
 }
